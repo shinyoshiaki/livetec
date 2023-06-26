@@ -3,9 +3,19 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "devDependencies": {},
+  "dependencies": {
+    "werift": "0.18.3",
+    "sdp-transform": "^2.14.1",
+    "openapi3-ts": "^4.1.2",
+    "@sinclair/typebox": "^0.28.18"
+  },
+  "devDependencies": {
+    "@types/sdp-transform": "^2.4.6"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "schema": "ts-node scripts/openapi.ts",
+    "html": "npx redoc-cli bundle ./docs/openapi.json -o ./docs/openapi.html",
+    "doc": "npm run schema && npm run html"
   },
   "repository": {
     "type": "git",
