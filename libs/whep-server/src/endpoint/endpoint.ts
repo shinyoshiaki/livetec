@@ -29,7 +29,7 @@ export const postEndpoint: Endpoint = {
   path: "/whep/endpoint",
   item: {
     post: {
-      description: "success",
+      description: "post",
       requestBody: {
         content: {
           "application/sdp": { schema: string },
@@ -56,7 +56,7 @@ export const postEndpoint: Endpoint = {
               },
             },
           },
-          description: "success",
+          description: "response",
           content: { "application/sdp": { schema: string } },
         } as ResponseObject,
       },
@@ -86,7 +86,7 @@ export const resourceEndpoint: Endpoint = {
   path: `/resource/{${resourceParam.id.name}}`,
   item: {
     patch: {
-      description: "success",
+      description: "patch",
       parameters: Object.values(resourceParam),
       requestBody: {
         content: {
@@ -95,7 +95,7 @@ export const resourceEndpoint: Endpoint = {
       },
       responses: {
         "204": {
-          description: "success",
+          description: "trickle",
         } as ResponseObject,
         "200": {
           headers: {
@@ -103,7 +103,7 @@ export const resourceEndpoint: Endpoint = {
               schema: string,
             },
           },
-          description: "success",
+          description: "restart ice",
           content: { "application/trickle-ice-sdpfrag": { schema: string } },
         } as ResponseObject,
       },
