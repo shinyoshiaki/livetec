@@ -98,13 +98,53 @@ export const resourceEndpoint: Endpoint = {
           description: "trickle",
         } as ResponseObject,
         "200": {
+          description: "restart ice",
           headers: {
             ETag: {
               schema: string,
             },
           },
-          description: "restart ice",
           content: { "application/trickle-ice-sdpfrag": { schema: string } },
+        } as ResponseObject,
+      },
+    },
+  },
+};
+
+const layerParam = {
+  id: {
+    in: "path",
+    name: "id",
+    required: true,
+    schema: Type.String(),
+  } as ParameterObject,
+} as const;
+export type LayerParam = {
+  [key in keyof typeof resourceParam]: string;
+};
+const layerRequestBody = Type.Object({
+  mediaId: Type.Optional(Type.String()),
+  encodingId: Type.Optional(Type.String()),
+  spatialLayerId: Type.Optional(Type.String()),
+  temporalLayerId: Type.Optional(Type.String()),
+  maxSpatialLayerId: Type.Optional(Type.String()),
+  maxTemporalLayerId: Type.Optional(Type.String()),
+});
+export type LayerRequestBody = Static<typeof layerRequestBody>;
+export const layerEndpoint: Endpoint = {
+  path: `/resource/{${layerParam.id.name}}/layer`,
+  item: {
+    post: {
+      description: "post",
+      parameters: Object.values(layerParam),
+      requestBody: {
+        content: {
+          "application/json": { schema: layerRequestBody },
+        },
+      },
+      responses: {
+        "200": {
+          description: "layer",
         } as ResponseObject,
       },
     },
