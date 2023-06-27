@@ -1,5 +1,5 @@
 {
-  "name": "@web-live/whep-client",
+  "name": "@weblive/whep-client",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,12 +9,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shinyoshiaki/web-live.git"
+    "url": "git+https://github.com/shinyoshiaki/weblive.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/shinyoshiaki/web-live/issues"
+    "url": "https://github.com/shinyoshiaki/weblive/issues"
   },
-  "homepage": "https://github.com/shinyoshiaki/web-live#readme"
+  "homepage": "https://github.com/shinyoshiaki/weblive#readme"
 }
