@@ -4,7 +4,7 @@
   "description": "",
   "license": "ISC",
   "author": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "schema": "ts-node scripts/openapi.ts",
     "html": "npx redoc-cli bundle ./docs/openapi.json -o ./docs/openapi.html",

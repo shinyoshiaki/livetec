@@ -3,6 +3,7 @@ import { MediaAttributes, parse } from "sdp-transform";
 import { randomUUID } from "crypto";
 
 export class WhepMediaSession {
+  readonly id = randomUUID();
   pc: RTCPeerConnection;
   etag = randomUUID();
 
@@ -30,7 +31,7 @@ export class WhepMediaSession {
     const answer = await this.pc.createAnswer();
     await this.pc.setLocalDescription(answer);
 
-    return { sdp: this.pc.localDescription!.sdp, etag: this.etag };
+    return { answer: this.pc.localDescription!.sdp, etag: this.etag };
   }
 
   async setIceRequest({

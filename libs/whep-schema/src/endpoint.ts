@@ -12,19 +12,24 @@ interface Endpoint {
 
 const string = Type.String();
 export type String = Static<typeof string>;
-
-//---------------------------------------------------------------------
-
-const postResponseHeaderAcceptPatch = Type.Literal(
-  "application/trickle-ice-sdpfrag"
-);
-export type PostResponseHeaderAcceptPatch = Static<
-  typeof postResponseHeaderAcceptPatch
->;
 export const ianaLayer = "urn:ietf:params:whep:ext:core:layer" as const;
 export const ianaSSE =
   "urn:ietf:params:whep:ext:core:server-sent-events" as const;
 export const sseEvents = "layers" as const;
+
+//---------------------------------------------------------------------
+
+export const offerRequestBody = string;
+export type OfferRequestBody = Static<typeof offerRequestBody>;
+const offerResponseHeaderAcceptPatch = Type.Literal(
+  "application/trickle-ice-sdpfrag"
+);
+export type OfferResponseHeaderAcceptPatch = Static<
+  typeof offerResponseHeaderAcceptPatch
+>;
+export const offerResponseBody = string;
+export type OfferResponseBody = Static<typeof offerResponseBody>;
+
 export const postEndpoint: Endpoint = {
   path: "/whep/endpoint",
   item: {
@@ -32,14 +37,14 @@ export const postEndpoint: Endpoint = {
       description: "post",
       requestBody: {
         content: {
-          "application/sdp": { schema: string },
+          "application/sdp": { schema: offerRequestBody },
         },
       },
       responses: {
         "201": {
           headers: {
             "Accept-Patch": {
-              schema: postResponseHeaderAcceptPatch,
+              schema: offerResponseHeaderAcceptPatch,
             },
             ETag: {
               schema: string,
@@ -57,7 +62,7 @@ export const postEndpoint: Endpoint = {
             },
           },
           description: "response",
-          content: { "application/sdp": { schema: string } },
+          content: { "application/sdp": { schema: offerResponseBody } },
         } as ResponseObject,
       },
     },
