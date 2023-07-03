@@ -1,0 +1,18 @@
+{
+  "name": "whep-schema",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "schema": "ts-node scripts/openapi.ts",
+    "html": "npx redoc-cli bundle ./docs/openapi.json -o ./docs/openapi.html",
+    "doc": "npm run schema && npm run html"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.28.18",
+    "openapi3-ts": "^4.1.2"
+  },
+  "devDependencies": {}
+}

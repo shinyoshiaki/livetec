@@ -2,29 +2,23 @@
   "name": "@weblive/whep-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "dependencies": {
-    "werift": "0.18.3",
-    "sdp-transform": "^2.14.1",
-    "openapi3-ts": "^4.1.2",
-    "@sinclair/typebox": "^0.28.18"
-  },
-  "devDependencies": {
-    "@types/sdp-transform": "^2.4.6"
-  },
-  "scripts": {
-    "schema": "ts-node scripts/openapi.ts",
-    "html": "npx redoc-cli bundle ./docs/openapi.json -o ./docs/openapi.html",
-    "doc": "npm run schema && npm run html"
+  "homepage": "https://github.com/shinyoshiaki/weblive#readme",
+  "bugs": {
+    "url": "https://github.com/shinyoshiaki/weblive/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shinyoshiaki/weblive.git"
   },
-  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/shinyoshiaki/weblive/issues"
+  "author": "",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {
+    "sdp-transform": "^2.14.1",
+    "werift": "0.18.3"
   },
-  "homepage": "https://github.com/shinyoshiaki/weblive#readme"
+  "devDependencies": {
+    "@types/sdp-transform": "^2.4.6"
+  }
 }
