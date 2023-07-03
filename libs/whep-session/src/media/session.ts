@@ -2,7 +2,7 @@ import { IceCandidate, MediaStreamTrack, RTCPeerConnection } from "werift";
 import { MediaAttributes, parse } from "sdp-transform";
 import { randomUUID } from "crypto";
 
-export class WhepServerSession {
+export class WhepMediaSession {
   pc: RTCPeerConnection;
   etag = randomUUID();
 

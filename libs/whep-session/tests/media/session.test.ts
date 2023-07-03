@@ -1,9 +1,9 @@
-import { WhepServerSession } from "../../src";
+import { WhepMediaSession } from "../../src";
 
 describe("session", () => {
   describe("setIceRequest", () => {
     it("test", async () => {
-      const session = new WhepServerSession({ tracks: [] });
+      const session = new WhepMediaSession({ tracks: [] });
       await session.setIceRequest({
         etag: session.etag,
         candidate: `a=ice-ufrag:EsAw
