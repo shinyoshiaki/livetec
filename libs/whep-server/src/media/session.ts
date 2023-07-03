@@ -1,8 +1,10 @@
-import { MediaStreamTrack, RTCPeerConnection } from "werift";
-import { parse } from "sdp-transform";
+import { IceCandidate, MediaStreamTrack, RTCPeerConnection } from "werift";
+import { MediaAttributes, parse } from "sdp-transform";
+import { randomUUID } from "crypto";
 
 export class WhepServerSession {
   pc: RTCPeerConnection;
+  etag = randomUUID();
 
   constructor({ tracks }: { tracks: MediaStreamTrack[] }) {
     this.pc = new RTCPeerConnection();
@@ -28,6 +30,43 @@ export class WhepServerSession {
     const answer = await this.pc.createAnswer();
     await this.pc.setLocalDescription(answer);
 
-    return this.pc.localDescription!.sdp;
+    return { sdp: this.pc.localDescription!.sdp, etag: this.etag };
+  }
+
+  async setIceRequest({
+    etag,
+    candidate,
+  }: {
+    etag: string;
+    candidate: string;
+  }) {
+    if (etag !== this.etag) {
+      throw new Error("invalid etag");
+    }
+
+    const obj = parse(candidate);
+    if (obj.media.length > 0) {
+      await this.setRemoteIceCandidate(obj.media[0].candidates ?? []);
+    } else {
+      throw new Error("ice restart is not supported yet");
+    }
+  }
+
+  private async setRemoteIceCandidate(
+    candidates: NonNullable<MediaAttributes["candidates"]>
+  ) {
+    for (const candidate of candidates) {
+      await this.pc.addIceCandidate(
+        new IceCandidate(
+          candidate.component,
+          candidate.foundation,
+          candidate.ip,
+          candidate.port,
+          Number(candidate.priority),
+          candidate.transport,
+          candidate.type
+        ).toJSON()
+      );
+    }
   }
 }

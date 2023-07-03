@@ -97,15 +97,16 @@ export const resourceEndpoint: Endpoint = {
         "204": {
           description: "trickle",
         } as ResponseObject,
-        "200": {
-          description: "restart ice",
-          headers: {
-            ETag: {
-              schema: string,
-            },
-          },
-          content: { "application/trickle-ice-sdpfrag": { schema: string } },
-        } as ResponseObject,
+        // werift do not support restart ice yet
+        // "200": {
+        //   description: "restart ice",
+        //   headers: {
+        //     ETag: {
+        //       schema: string,
+        //     },
+        //   },
+        //   content: { "application/trickle-ice-sdpfrag": { schema: string } },
+        // } as ResponseObject,
       },
     },
   },
