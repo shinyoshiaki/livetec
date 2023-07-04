@@ -24,7 +24,7 @@ export class WHEPClient extends EventTarget {
     return sdp.match(/a=ice-pwd:(.*)\r\n/)![1];
   }
 
-  async view(pc: RTCPeerConnection, url: string, token: string) {
+  async view(pc: RTCPeerConnection, url: string, token?: string) {
     //If already publishing
     if (this.pc) throw new Error("Already viewing");
 
