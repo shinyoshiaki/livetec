@@ -3,14 +3,17 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import {
   OfferRequestBody,
   OfferResponseBody,
+  ResourceParam,
+  ResourceRequestBody,
   acceptPatch,
   buildLink,
   ianaLayer,
   ianaSSE,
   offerRequestBody,
+  resourceRequestBody,
   responseHeaders,
 } from ".";
-import { createSession } from "./usecase";
+import { createSession, iceRequest } from "./usecase";
 import { config } from "./config";
 
 const ajv = new Ajv();
@@ -20,7 +23,6 @@ const checkOfferRequestBody = ajv.compile(offerRequestBody);
 export async function offer(
   req: FastifyRequest<{
     Body: OfferRequestBody;
-    Headers: { [key: string]: string };
   }>,
   reply: FastifyReply
 ): Promise<void> {
@@ -53,6 +55,30 @@ export async function offer(
         ])
       )
       .send(responseBody);
+  } catch (error) {
+    await reply.code(500).send({ error });
+  }
+}
+
+const checkResourceRequestBody = ajv.compile(resourceRequestBody);
+
+export async function resource(
+  req: FastifyRequest<{
+    Body: ResourceRequestBody;
+    Headers: ResourceParam;
+    Params: ResourceParam;
+  }>,
+  reply: FastifyReply
+): Promise<void> {
+  try {
+    checkResourceRequestBody(req.body);
+
+    const candidate = req.body;
+    const { id } = req.params;
+    const etag = req.headers["IF-Match"];
+    await iceRequest({ candidate, etag, id });
+
+    await reply.code(204).send();
   } catch (error) {
     await reply.code(500).send({ error });
   }

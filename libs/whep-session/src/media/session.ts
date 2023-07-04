@@ -34,13 +34,7 @@ export class WhepMediaSession {
     return { answer: this.pc.localDescription!.sdp, etag: this.etag };
   }
 
-  async setIceRequest({
-    etag,
-    candidate,
-  }: {
-    etag: string;
-    candidate: string;
-  }) {
+  async iceRequest({ etag, candidate }: { etag: string; candidate: string }) {
     if (etag !== this.etag) {
       throw new Error("invalid etag");
     }

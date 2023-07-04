@@ -4,7 +4,7 @@ describe("session", () => {
   describe("setIceRequest", () => {
     it("test", async () => {
       const session = new WhepMediaSession({ tracks: [] });
-      await session.setIceRequest({
+      await session.iceRequest({
         etag: session.etag,
         candidate: `a=ice-ufrag:EsAw
 a=ice-pwd:P2uYro0UCOQ4zxjKXaWCBui1

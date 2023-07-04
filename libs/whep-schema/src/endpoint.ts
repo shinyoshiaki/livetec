@@ -94,6 +94,8 @@ export const offerEndpoint: Endpoint = {
   },
 };
 
+export const resourceRequestBody = string;
+export type ResourceRequestBody = Static<typeof resourceRequestBody>;
 const resourceParam = {
   id: {
     in: "path",
@@ -120,7 +122,7 @@ export const resourceEndpoint: Endpoint = {
       parameters: Object.values(resourceParam),
       requestBody: {
         content: {
-          "application/trickle-ice-sdpfrag": { schema: string },
+          "application/trickle-ice-sdpfrag": { schema: resourceRequestBody },
         },
       },
       responses: {
