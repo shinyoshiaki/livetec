@@ -16,25 +16,40 @@ export const ianaLayer = "urn:ietf:params:whep:ext:core:layer" as const;
 export const ianaSSE =
   "urn:ietf:params:whep:ext:core:server-sent-events" as const;
 export const sseEvents = "layers" as const;
+export const trickleIce = "application/trickle-ice-sdpfrag" as const;
+export const acceptPatch = { trickleIce } as const;
+export const responseHeaders = {
+  acceptPatch: "Accept-Patch",
+  etag: "ETag",
+  location: "Location",
+  link: "Link",
+} as const;
 
 //---------------------------------------------------------------------
 
 export const offerRequestBody = string;
 export type OfferRequestBody = Static<typeof offerRequestBody>;
-const offerResponseHeaderAcceptPatch = Type.Literal(
-  "application/trickle-ice-sdpfrag"
-);
+const offerResponseHeaderAcceptPatch = Type.Literal(trickleIce);
 export type OfferResponseHeaderAcceptPatch = Static<
   typeof offerResponseHeaderAcceptPatch
 >;
 export const offerResponseBody = string;
 export type OfferResponseBody = Static<typeof offerResponseBody>;
-
-export const postEndpoint: Endpoint = {
-  path: "/whep/endpoint",
+export const buildLink = (arr: { link: string; rel: string }[]) => {
+  let res = "";
+  for (const { link, rel } of arr) {
+    if (res.length > 0) {
+      res += ",";
+    }
+    res += `<${link}>; rel="${rel}"`;
+  }
+  return res;
+};
+export const offerEndpoint: Endpoint = {
+  path: "/whep",
   item: {
     post: {
-      description: "post",
+      description: "offer",
       requestBody: {
         content: {
           "application/sdp": { schema: offerRequestBody },
@@ -43,21 +58,31 @@ export const postEndpoint: Endpoint = {
       responses: {
         "201": {
           headers: {
-            "Accept-Patch": {
+            [responseHeaders.acceptPatch]: {
               schema: offerResponseHeaderAcceptPatch,
             },
-            ETag: {
+            [responseHeaders.etag]: {
               schema: string,
             },
-            Location: {
+            [responseHeaders.location]: {
               schema: string,
+              example: "https://whep.example.org/resource/213786HF",
             },
-            Link: {
+            [responseHeaders.link]: {
               description:
                 "Contains links to the layer and server-sent events resources",
               schema: {
                 type: "string",
-                example: `<https://whep.ietf.org/resource/213786HF/sse>; rel="${ianaSSE}" events="${sseEvents}",<https://whep.ietf.org/resource/213786HF/layer>; rel="${ianaLayer}"`,
+                example: buildLink([
+                  {
+                    link: "https://whep.ietf.org/resource/213786HF/sse",
+                    rel: ianaSSE,
+                  },
+                  {
+                    link: "https://whep.ietf.org/resource/213786HF/layer",
+                    rel: ianaLayer,
+                  },
+                ]),
               },
             },
           },
@@ -91,7 +116,7 @@ export const resourceEndpoint: Endpoint = {
   path: `/resource/{${resourceParam.id.name}}`,
   item: {
     patch: {
-      description: "patch",
+      description: "resource",
       parameters: Object.values(resourceParam),
       requestBody: {
         content: {
@@ -141,7 +166,7 @@ export const layerEndpoint: Endpoint = {
   path: `/resource/{${layerParam.id.name}}/layer`,
   item: {
     post: {
-      description: "post",
+      description: "layer",
       parameters: Object.values(layerParam),
       requestBody: {
         content: {

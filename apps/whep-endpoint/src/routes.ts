@@ -1,13 +1,13 @@
 import cors from "@fastify/cors";
 import { FastifyInstance } from "fastify";
 
-import { postEndpoint } from ".";
+import { offerEndpoint } from ".";
 import { offer } from "./controller";
 
 export async function registerExternalRoutes(server: FastifyInstance) {
   await server.register(cors, { origin: true });
 
-  server.post(convertPath(postEndpoint.path), offer);
+  server.post(convertPath(offerEndpoint.path), offer);
 }
 
 function convertPath(openApiPath: string): string {

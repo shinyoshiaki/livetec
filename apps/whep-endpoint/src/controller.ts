@@ -1,7 +1,17 @@
 import Ajv from "ajv";
 import { FastifyRequest, FastifyReply } from "fastify";
-import { OfferRequestBody, OfferResponseBody, offerRequestBody } from ".";
+import {
+  OfferRequestBody,
+  OfferResponseBody,
+  acceptPatch,
+  buildLink,
+  ianaLayer,
+  ianaSSE,
+  offerRequestBody,
+  responseHeaders,
+} from ".";
 import { createSession } from "./usecase";
+import { config } from "./config";
 
 const ajv = new Ajv();
 
@@ -18,11 +28,31 @@ export async function offer(
     checkOfferRequestBody(req.body);
 
     const offer = req.body;
-    const { answer } = await createSession(offer);
+    const { answer, etag, id } = await createSession(offer);
 
     const responseBody: OfferResponseBody = answer;
 
-    await reply.code(200).send(responseBody);
+    const location = `${config.endpoint}/resource/${id}`;
+
+    await reply
+      .code(201)
+      .header(responseHeaders.acceptPatch, acceptPatch.trickleIce)
+      .header(responseHeaders.etag, etag)
+      .header(responseHeaders.location, location)
+      .header(
+        responseHeaders.link,
+        buildLink([
+          {
+            link: `${location}/sse`,
+            rel: ianaSSE,
+          },
+          {
+            link: `${location}/layer`,
+            rel: ianaLayer,
+          },
+        ])
+      )
+      .send(responseBody);
   } catch (error) {
     await reply.code(500).send({ error });
   }
