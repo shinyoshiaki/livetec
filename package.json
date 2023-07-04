@@ -6,7 +6,7 @@
   "license": "MIT",
   "author": "shinyoshiaki",
   "workspaces": [
-    "apps/*",
+    "examples/*",
     "libs/*"
   ],
   "scripts": {
