@@ -1,6 +1,6 @@
 {
-  "name": "whep-schema",
-  "version": "1.0.0",
+  "name": "@weblive/whep-schema",
+  "version": "0.0.1",
   "description": "",
   "license": "ISC",
   "author": "",
