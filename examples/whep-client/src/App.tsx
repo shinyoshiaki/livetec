@@ -33,8 +33,8 @@ function App() {
 
   return (
     <div>
-      <video ref={videoRef} controls autoPlay />
       <button onClick={play}>play</button>
+      <video ref={videoRef} controls autoPlay />
     </div>
   );
 }

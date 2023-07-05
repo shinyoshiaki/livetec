@@ -1,7 +1,10 @@
-import { sessionRepository } from "./dependencies";
+import { mediaSource, sessionRepository } from "./dependencies";
 
 export const createSession = async (sdp: string) => {
-  const session = sessionRepository.createSession([]);
+  const session = sessionRepository.createSession([
+    mediaSource.audio,
+    mediaSource.video,
+  ]);
   const { answer, etag } = await session.setRemoteOffer(sdp);
   return { answer, etag, id: session.id };
 };
@@ -15,7 +18,7 @@ export const iceRequest = async ({
   etag: string;
   candidate: string;
 }) => {
-  const session = sessionRepository.sessions.get(id);
+  const session = sessionRepository.getSession(id);
   if (!session) {
     throw new Error("session not found");
   }

@@ -38,12 +38,11 @@ export async function offer(
 
     await reply
       .code(201)
-      .header(responseHeaders.acceptPatch, acceptPatch.trickleIce)
-      .header(responseHeaders.etag, etag)
-      .header(responseHeaders.location, location)
-      .header(
-        responseHeaders.link,
-        buildLink([
+      .headers({
+        [responseHeaders.acceptPatch]: acceptPatch.trickleIce,
+        [responseHeaders.etag]: etag,
+        [responseHeaders.location]: location,
+        [responseHeaders.link]: buildLink([
           {
             link: `${location}/sse`,
             rel: ianaSSE,
@@ -52,8 +51,24 @@ export async function offer(
             link: `${location}/layer`,
             rel: ianaLayer,
           },
-        ])
-      )
+        ]),
+      })
+      // .header(responseHeaders.acceptPatch, acceptPatch.trickleIce)
+      // .header(responseHeaders.etag, etag)
+      // .header(responseHeaders.location, location)
+      // .header(
+      //   responseHeaders.link,
+      //   buildLink([
+      //     {
+      //       link: `${location}/sse`,
+      //       rel: ianaSSE,
+      //     },
+      //     {
+      //       link: `${location}/layer`,
+      //       rel: ianaLayer,
+      //     },
+      //   ])
+      // )
       .send(responseBody);
   } catch (error) {
     await reply.code(500).send({ error });

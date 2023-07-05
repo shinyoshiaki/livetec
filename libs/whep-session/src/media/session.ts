@@ -1,4 +1,9 @@
-import { IceCandidate, MediaStreamTrack, RTCPeerConnection } from "werift";
+import {
+  IceCandidate,
+  MediaStreamTrack,
+  PeerConfig,
+  RTCPeerConnection,
+} from "werift";
 import { MediaAttributes, parse } from "sdp-transform";
 import { randomUUID } from "crypto";
 
@@ -7,24 +12,34 @@ export class WhepMediaSession {
   pc: RTCPeerConnection;
   etag = randomUUID();
 
-  constructor({ tracks }: { tracks: MediaStreamTrack[] }) {
-    this.pc = new RTCPeerConnection();
-    for (const track of tracks) {
-      this.pc.addTransceiver(track, { direction: "sendonly" });
-    }
+  constructor(
+    private props: { tracks: MediaStreamTrack[]; config?: Partial<PeerConfig> }
+  ) {
+    this.pc = new RTCPeerConnection(props.config);
+    this.pc.connectionStateChange.subscribe((state) => {
+      console.log("connectionStateChange", state);
+    });
+    this.pc.iceConnectionStateChange.subscribe((state) => {
+      console.log("iceConnectionStateChange", state);
+    });
   }
 
   async setRemoteOffer(sdp: string) {
     const obj = parse(sdp);
     const media = obj.media;
 
+    for (const m of media) {
+      if (m.type === "application") {
+        continue;
+      }
+      const track = this.props.tracks.find((t) => t.kind === m.type);
+      if (track) {
+        this.pc.addTransceiver(track, { direction: "sendonly" });
+      }
+    }
+
     if (media.length !== this.pc.getTransceivers().length) {
       throw new Error("invalid media length");
-    }
-    for (const t of this.pc.getTransceivers()) {
-      if (!media.map((m) => m.type).includes(t.kind)) {
-        throw new Error("invalid media type");
-      }
     }
 
     await this.pc.setRemoteDescription({ type: "offer", sdp });
@@ -36,7 +51,7 @@ export class WhepMediaSession {
 
   async iceRequest({ etag, candidate }: { etag: string; candidate: string }) {
     if (etag !== this.etag) {
-      throw new Error("invalid etag");
+      // throw new Error("invalid etag");
     }
 
     const obj = parse(candidate);

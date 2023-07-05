@@ -115,7 +115,7 @@ export type ResourceParam = {
 };
 
 export const resourceEndpoint: Endpoint = {
-  path: `/resource/{${resourceParam.id.name}}`,
+  path: `/whep/resource/{${resourceParam.id.name}}`,
   item: {
     patch: {
       description: "resource",
@@ -165,7 +165,7 @@ const layerRequestBody = Type.Object({
 });
 export type LayerRequestBody = Static<typeof layerRequestBody>;
 export const layerEndpoint: Endpoint = {
-  path: `/resource/{${layerParam.id.name}}/layer`,
+  path: `/whep/resource/{${layerParam.id.name}}/layer`,
   item: {
     post: {
       description: "layer",
