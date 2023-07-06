@@ -1,14 +1,23 @@
 import cors from "@fastify/cors";
 import { FastifyInstance } from "fastify";
+import { FastifySSEPlugin } from "fastify-sse-v2";
 
-import { offerEndpoint, resourceEndpoint, responseHeaders } from ".";
-import { offer, resource } from "./controller";
+import {
+  offerEndpoint,
+  resourceEndpoint,
+  responseHeaders,
+  sseEndpoint,
+  sseStreamPath,
+} from ".";
+import { offer, resource, sse, sseStream } from "./controller";
 
 export async function registerExternalRoutes(server: FastifyInstance) {
   await server.register(cors, {
     origin: true,
     exposedHeaders: Object.values(responseHeaders),
   });
+  server.register(FastifySSEPlugin);
+
   server.addContentTypeParser(
     "application/sdp",
     { parseAs: "string" },
@@ -28,6 +37,8 @@ export async function registerExternalRoutes(server: FastifyInstance) {
 
   server.post(convertPath(offerEndpoint.path), offer);
   server.patch(convertPath(resourceEndpoint.path), resource);
+  server.post(convertPath(sseEndpoint.path), sse);
+  server.get(convertPath(sseStreamPath), sseStream);
 }
 
 function convertPath(openApiPath: string): string {

@@ -1,10 +1,14 @@
 import Ajv from "ajv";
 import { FastifyRequest, FastifyReply } from "fastify";
+import { FastifySSEPlugin } from "fastify-sse-v2";
+import { on } from "events";
 import {
   OfferRequestBody,
   OfferResponseBody,
   ResourceParam,
   ResourceRequestBody,
+  SseParam,
+  SseRequestBody,
   acceptPatch,
   buildLink,
   ianaLayer,
@@ -13,8 +17,14 @@ import {
   resourceRequestBody,
   responseHeaders,
 } from ".";
-import { createSession, iceRequest } from "./usecase";
+import {
+  createSession,
+  iceRequest,
+  requestSSE,
+  startSSEStream,
+} from "./usecase";
 import { config } from "./config";
+import { EventEmitter } from "stream";
 
 const ajv = new Ajv();
 
@@ -94,6 +104,68 @@ export async function resource(
     await iceRequest({ candidate, etag, id });
 
     await reply.code(204).send();
+  } catch (error) {
+    await reply.code(500).send({ error });
+  }
+}
+
+const checkSseRequestBody = ajv.compile(resourceRequestBody);
+
+export async function sse(
+  req: FastifyRequest<{
+    Body: SseRequestBody;
+    Params: SseParam;
+  }>,
+  reply: FastifyReply
+): Promise<void> {
+  try {
+    checkSseRequestBody(req.body);
+
+    const request = req.body;
+    const { id } = req.params;
+
+    requestSSE({ events: request, id });
+
+    await reply.code(201).send();
+  } catch (error) {
+    await reply.code(500).send({ error });
+  }
+}
+
+export async function sseStream(
+  req: FastifyRequest<{
+    Params: SseParam;
+  }>,
+  reply: FastifyReply
+): Promise<void> {
+  try {
+    const { id } = req.params;
+
+    const { event, startEvent } = startSSEStream({ id });
+
+    const eventEmitter = new EventEmitter();
+    event.subscribe((event) => eventEmitter.emit("event", event));
+    event.onended = () => {
+      eventEmitter.emit("endSseStream");
+      eventEmitter.removeAllListeners();
+    };
+
+    reply.sse(
+      (async function* () {
+        for await (const [event] of on(eventEmitter, "event")) {
+          if (event.name === "endSseStream") {
+            break;
+          }
+
+          yield {
+            event: event.name,
+            data: JSON.stringify(event),
+          };
+        }
+      })()
+    );
+
+    startEvent();
   } catch (error) {
     await reply.code(500).send({ error });
   }

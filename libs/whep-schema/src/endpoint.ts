@@ -144,6 +144,47 @@ export const resourceEndpoint: Endpoint = {
   },
 };
 
+const sseParam = {
+  id: {
+    in: "path",
+    name: "id",
+    required: true,
+    schema: Type.String(),
+  } as ParameterObject,
+} as const;
+export type SseParam = {
+  [key in keyof typeof sseParam]: string;
+};
+const sseRequestBody = Type.Array(Type.String(), { examples: ["layers"] });
+
+export type SseRequestBody = Static<typeof sseRequestBody>;
+export const sseEndpoint: Endpoint = {
+  path: `/whep/resource/{${sseParam.id.name}}/sse`,
+  item: {
+    post: {
+      description: "sse",
+      parameters: Object.values(sseParam),
+      requestBody: {
+        content: {
+          "application/json": { schema: sseRequestBody },
+        },
+      },
+      responses: {
+        "201": {
+          description: "sse",
+          headers: {
+            [responseHeaders.location]: {
+              schema: string,
+              example:
+                "https://whep.example.org/resource/213786HF/sse/event-stream",
+            },
+          },
+        } as ResponseObject,
+      },
+    },
+  },
+};
+
 const layerParam = {
   id: {
     in: "path",
@@ -183,3 +224,5 @@ export const layerEndpoint: Endpoint = {
     },
   },
 };
+
+export const sseStreamPath = `/whep/resource/{${sseParam.id.name}}/sse/event-stream`;

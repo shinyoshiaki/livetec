@@ -140,6 +140,8 @@ export class WHEPClient extends EventTarget {
       }
     }
 
+    console.log({ links });
+
     //Get extensions url
     if (links.hasOwnProperty("urn:ietf:params:whip:core:server-sent-events"))
       //Get url
@@ -426,7 +428,14 @@ export class WHEPClient extends EventTarget {
     });
   }
 
-  async selectLayer(layer) {
+  async selectLayer(layer: {
+    mediaId: string;
+    encodingId: string;
+    spatialLayerId: string;
+    temporalLayerId: string;
+    maxSpatialLayerId: string;
+    maxTemporalLayerId: string;
+  }) {
     if (!this.layerUrl)
       throw new Error("WHIP resource does not support layer selection");
 

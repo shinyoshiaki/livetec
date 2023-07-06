@@ -6,14 +6,48 @@ import {
 } from "werift";
 import { MediaAttributes, parse } from "sdp-transform";
 import { randomUUID } from "crypto";
+import Event from "rx.mini";
+
+export interface LayersEvent {
+  [key: string]: {
+    active: {
+      id: string;
+      simulcastIdx: number;
+      bitrate: number;
+      width: number;
+      height: number;
+    }[];
+    inactive: {
+      id: string;
+      simulcastIdx: number;
+    }[];
+    layers: {
+      encodingId: string;
+      simulcastIdx?: number;
+      spatialLayerId?: number;
+      temporalLayerId?: number;
+      bitrate?: number;
+      width?: number;
+      height?: number;
+    }[];
+  };
+}
+
+export type Events = LayersEvent;
 
 export class WhepMediaSession {
   readonly id = randomUUID();
   pc: RTCPeerConnection;
   etag = randomUUID();
+  event = new Event<[{ event: string; data: Events }]>();
+  eventList: string[] = [];
 
   constructor(
-    private props: { tracks: MediaStreamTrack[]; config?: Partial<PeerConfig> }
+    private props: {
+      video?: MediaStreamTrack[];
+      audio?: MediaStreamTrack;
+      config?: Partial<PeerConfig>;
+    }
   ) {
     this.pc = new RTCPeerConnection(props.config);
     this.pc.connectionStateChange.subscribe((state) => {
@@ -24,6 +58,43 @@ export class WhepMediaSession {
     });
   }
 
+  get tracks() {
+    const tracks: MediaStreamTrack[] = [];
+    if ((this.props.video ?? []).length > 0) {
+      tracks.push(this.props.video![0]);
+    }
+    if (this.props.audio) {
+      tracks.push(this.props.audio);
+    }
+    return tracks;
+  }
+
+  requestEvent(events: string[]) {
+    this.eventList = events;
+  }
+
+  streamEvent = () => {
+    if (
+      this.eventList.includes("layers") &&
+      (this.props.video ?? []).length > 0
+    ) {
+      const event: LayersEvent = {};
+      const transceiver = this.pc
+        .getTransceivers()
+        .find((t) => t.kind === "video");
+      if (transceiver) {
+        event[transceiver.mid!] = {
+          active: [],
+          inactive: [],
+          layers: this.props.video!.map((_, i) => ({
+            encodingId: i.toString(),
+          })),
+        };
+      }
+      this.event.execute({ event: "layers", data: event });
+    }
+  };
+
   async setRemoteOffer(sdp: string) {
     const obj = parse(sdp);
     const media = obj.media;
@@ -32,7 +103,7 @@ export class WhepMediaSession {
       if (m.type === "application") {
         continue;
       }
-      const track = this.props.tracks.find((t) => t.kind === m.type);
+      const track = this.tracks.find((t) => t.kind === m.type);
       if (track) {
         this.pc.addTransceiver(track, { direction: "sendonly" });
       }

@@ -16,7 +16,8 @@
   "scripts": {},
   "dependencies": {
     "sdp-transform": "^2.14.1",
-    "werift": "0.18.3"
+    "werift": "0.18.3",
+    "rx.mini": "^1.4.0"
   },
   "devDependencies": {
     "@types/sdp-transform": "^2.4.6"

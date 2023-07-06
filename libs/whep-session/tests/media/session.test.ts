@@ -3,7 +3,7 @@ import { WhepMediaSession } from "../../src";
 describe("session", () => {
   describe("setIceRequest", () => {
     it("test", async () => {
-      const session = new WhepMediaSession({ tracks: [] });
+      const session = new WhepMediaSession({});
       await session.iceRequest({
         etag: session.etag,
         candidate: `a=ice-ufrag:EsAw

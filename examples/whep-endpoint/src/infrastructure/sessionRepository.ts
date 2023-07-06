@@ -3,9 +3,16 @@ import { WhepMediaSession, MediaStreamTrack, RTCRtpCodecParameters } from "..";
 export class SessionRepository {
   private sessions = new Map<string, WhepMediaSession>();
 
-  createSession(tracks: MediaStreamTrack[]) {
+  createSession({
+    video,
+    audio,
+  }: {
+    video?: MediaStreamTrack[];
+    audio?: MediaStreamTrack;
+  }) {
     const session = new WhepMediaSession({
-      tracks,
+      video,
+      audio,
       config: {
         codecs: {
           video: [
