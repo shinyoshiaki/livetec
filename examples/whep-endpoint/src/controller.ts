@@ -1,6 +1,5 @@
 import Ajv from "ajv";
 import { FastifyRequest, FastifyReply } from "fastify";
-import { FastifySSEPlugin } from "fastify-sse-v2";
 import { on } from "events";
 import {
   OfferRequestBody,
@@ -16,6 +15,7 @@ import {
   offerRequestBody,
   resourceRequestBody,
   responseHeaders,
+  supportedEvents,
 } from ".";
 import {
   createSession,
@@ -56,6 +56,7 @@ export async function offer(
           {
             link: `${location}/sse`,
             rel: ianaSSE,
+            events: supportedEvents.join(","),
           },
           {
             link: `${location}/layer`,
@@ -125,8 +126,14 @@ export async function sse(
     const { id } = req.params;
 
     requestSSE({ events: request, id });
+    const location = `${config.endpoint}/resource/${id}/sse/event-stream`;
 
-    await reply.code(201).send();
+    await reply
+      .code(201)
+      .headers({
+        [responseHeaders.location]: location,
+      })
+      .send();
   } catch (error) {
     await reply.code(500).send({ error });
   }
@@ -144,7 +151,9 @@ export async function sseStream(
     const { event, startEvent } = startSSEStream({ id });
 
     const eventEmitter = new EventEmitter();
-    event.subscribe((event) => eventEmitter.emit("event", event));
+    event.subscribe((event) => {
+      eventEmitter.emit("event", event);
+    });
     event.onended = () => {
       eventEmitter.emit("endSseStream");
       eventEmitter.removeAllListeners();
@@ -153,6 +162,7 @@ export async function sseStream(
     reply.sse(
       (async function* () {
         for await (const [event] of on(eventEmitter, "event")) {
+          console.log("sseEvent", event);
           if (event.name === "endSseStream") {
             break;
           }
@@ -165,7 +175,9 @@ export async function sseStream(
       })()
     );
 
-    startEvent();
+    process.nextTick(() => {
+      startEvent();
+    });
   } catch (error) {
     await reply.code(500).send({ error });
   }

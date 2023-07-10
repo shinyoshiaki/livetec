@@ -1,3 +1,6 @@
+const ianaSSE = "urn:ietf:params:whep:ext:core:server-sent-events";
+export const ianaLayer = "urn:ietf:params:whep:ext:core:layer";
+
 export class WHEPClient extends EventTarget {
   iceUsername?: string;
   icePassword?: string;
@@ -143,27 +146,18 @@ export class WHEPClient extends EventTarget {
     console.log({ links });
 
     //Get extensions url
-    if (links.hasOwnProperty("urn:ietf:params:whip:core:server-sent-events"))
+    if (links.hasOwnProperty(ianaSSE))
       //Get url
-      this.eventsUrl = new URL(
-        links["urn:ietf:params:whip:core:server-sent-events"][0].url,
-        url
-      );
-    if (links.hasOwnProperty("urn:ietf:params:whip:core:layer"))
-      this.layerUrl = new URL(
-        links["urn:ietf:params:whip:core:layer"][0].url,
-        url
-      );
+      this.eventsUrl = new URL(links[ianaSSE][0].url, url);
+    if (links.hasOwnProperty(ianaLayer))
+      this.layerUrl = new URL(links[ianaLayer][0].url, url);
 
     //If we have an event url
     if (this.eventsUrl) {
       //Get supported events
-      const events = links["urn:ietf:params:whip:core:server-sent-events"][
-        "events"
-      ]
-        ? links["urn:ietf:params:whip:core:server-sent-events"]["events"].split(
-            " "
-          )
+      const serverEvents = links[ianaSSE][0].params.events;
+      const events = serverEvents
+        ? serverEvents.split(",")
         : ["active", "inactive", "layers", "viewercount"];
       //Request headers
       const headers = {
@@ -192,8 +186,9 @@ export class WHEPClient extends EventTarget {
         this.eventSource.onerror = (event) => console.log(event);
         //Listen for events
         this.eventSource.onmessage = (event) => {
+          (event as any).message = JSON.parse(event.data);
           console.dir(event);
-          this.dispatchEvent(event);
+          this.dispatchEvent(new CustomEvent(event.type, event));
         };
       });
     }

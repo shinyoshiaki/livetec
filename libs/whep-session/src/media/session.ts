@@ -35,6 +35,8 @@ export interface LayersEvent {
 
 export type Events = LayersEvent;
 
+export const supportedEvents = ["layers"];
+
 export class WhepMediaSession {
   readonly id = randomUUID();
   pc: RTCPeerConnection;

@@ -1,6 +1,8 @@
 import { mediaSource, sessionRepository } from "./dependencies";
 
 export const createSession = async (sdp: string) => {
+  console.log("createSession");
+
   const session = sessionRepository.createSession({
     video: [mediaSource.video],
     audio: mediaSource.audio,
@@ -18,6 +20,8 @@ export const iceRequest = async ({
   etag: string;
   candidate: string;
 }) => {
+  console.log("iceRequest", { id, etag });
+
   const session = sessionRepository.getSession(id);
   if (!session) {
     throw new Error("session not found");
@@ -33,6 +37,8 @@ export const requestSSE = ({
   events: string[];
   id: string;
 }) => {
+  console.log("requestSSE", { events, id });
+
   const session = sessionRepository.getSession(id);
   if (!session) {
     throw new Error("session not found");
@@ -42,6 +48,8 @@ export const requestSSE = ({
 };
 
 export const startSSEStream = ({ id }: { id: string }) => {
+  console.log("startSSEStream", { id });
+
   const session = sessionRepository.getSession(id);
   if (!session) {
     throw new Error("session not found");

@@ -35,13 +35,18 @@ export type OfferResponseHeaderAcceptPatch = Static<
 >;
 export const offerResponseBody = string;
 export type OfferResponseBody = Static<typeof offerResponseBody>;
-export const buildLink = (arr: { link: string; rel: string }[]) => {
+export const buildLink = (
+  arr: { link: string; rel: string; events?: string }[]
+) => {
   let res = "";
-  for (const { link, rel } of arr) {
+  for (const { link, rel, events } of arr) {
     if (res.length > 0) {
-      res += ",";
+      res += ", ";
     }
     res += `<${link}>; rel="${rel}"`;
+    if (events) {
+      res += `; events="${events}"`;
+    }
   }
   return res;
 };
