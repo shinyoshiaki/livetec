@@ -2,6 +2,7 @@ import Ajv from "ajv";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { on } from "events";
 import {
+  LayerRequestBody,
   OfferRequestBody,
   OfferResponseBody,
   ResourceParam,
@@ -12,6 +13,7 @@ import {
   buildLink,
   ianaLayer,
   ianaSSE,
+  layerRequestBody,
   offerRequestBody,
   resourceRequestBody,
   responseHeaders,
@@ -20,6 +22,7 @@ import {
 import {
   createSession,
   iceRequest,
+  requestLayer,
   requestSSE,
   startSSEStream,
 } from "./usecase";
@@ -64,22 +67,6 @@ export async function offer(
           },
         ]),
       })
-      // .header(responseHeaders.acceptPatch, acceptPatch.trickleIce)
-      // .header(responseHeaders.etag, etag)
-      // .header(responseHeaders.location, location)
-      // .header(
-      //   responseHeaders.link,
-      //   buildLink([
-      //     {
-      //       link: `${location}/sse`,
-      //       rel: ianaSSE,
-      //     },
-      //     {
-      //       link: `${location}/layer`,
-      //       rel: ianaLayer,
-      //     },
-      //   ])
-      // )
       .send(responseBody);
   } catch (error) {
     await reply.code(500).send({ error });
@@ -178,6 +165,29 @@ export async function sseStream(
     process.nextTick(() => {
       startEvent();
     });
+  } catch (error) {
+    await reply.code(500).send({ error });
+  }
+}
+
+const checkLayerRequestBody = ajv.compile(layerRequestBody);
+
+export async function layer(
+  req: FastifyRequest<{
+    Body: LayerRequestBody;
+    Params: SseParam;
+  }>,
+  reply: FastifyReply
+): Promise<void> {
+  try {
+    checkLayerRequestBody(req.body);
+
+    const request = req.body;
+    const { id } = req.params;
+
+    requestLayer({ id, request });
+
+    await reply.code(200).send();
   } catch (error) {
     await reply.code(500).send({ error });
   }
