@@ -1,0 +1,19 @@
+{
+  "name": "@weblive/whip-schema",
+  "version": "0.0.1",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "private": true,
+  "scripts": {
+    "doc": "run-s schema html",
+    "schema": "ts-node scripts/openapi.ts",
+    "html": "npx redoc-cli bundle ./docs/openapi.json -o ./docs/openapi.html",
+    "type": "tsc -p ./tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.28.18",
+    "openapi3-ts": "^4.1.2"
+  },
+  "devDependencies": {}
+}
