@@ -13,7 +13,9 @@
   "license": "ISC",
   "author": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "type": "tsc -p ./tsconfig.json --noEmit"
+  },
   "dependencies": {
     "sdp-transform": "^2.14.1",
     "werift": "0.18.3",

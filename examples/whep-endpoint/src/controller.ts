@@ -2,21 +2,19 @@ import Ajv from "ajv";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { on } from "events";
 import {
-  LayerRequestBody,
-  OfferRequestBody,
-  OfferResponseBody,
-  ResourceParam,
-  ResourceRequestBody,
-  SseParam,
-  SseRequestBody,
+  IceParams,
+  LayerParams,
+  OfferParams,
+  SseParams,
   acceptPatch,
   buildLink,
   ianaLayer,
   ianaSSE,
-  layerRequestBody,
-  offerRequestBody,
-  resourceRequestBody,
+  iceParams,
+  layerParams,
+  offerParams,
   responseHeaders,
+  sseParams,
   supportedEvents,
 } from ".";
 import {
@@ -31,11 +29,11 @@ import { EventEmitter } from "stream";
 
 const ajv = new Ajv();
 
-const checkOfferRequestBody = ajv.compile(offerRequestBody);
+const checkOfferRequestBody = ajv.compile(offerParams.body);
 
 export async function offer(
   req: FastifyRequest<{
-    Body: OfferRequestBody;
+    Body: OfferParams["body"];
   }>,
   reply: FastifyReply
 ): Promise<void> {
@@ -45,7 +43,7 @@ export async function offer(
     const offer = req.body;
     const { answer, etag, id } = await createSession(offer);
 
-    const responseBody: OfferResponseBody = answer;
+    const responseBody: OfferParams["responseBody"] = answer;
 
     const location = `${config.endpoint}/resource/${id}`;
 
@@ -73,13 +71,13 @@ export async function offer(
   }
 }
 
-const checkResourceRequestBody = ajv.compile(resourceRequestBody);
+const checkResourceRequestBody = ajv.compile(iceParams.body);
 
 export async function resource(
   req: FastifyRequest<{
-    Body: ResourceRequestBody;
-    Headers: ResourceParam;
-    Params: ResourceParam;
+    Body: IceParams["body"];
+    Headers: IceParams["params"];
+    Params: IceParams["params"];
   }>,
   reply: FastifyReply
 ): Promise<void> {
@@ -97,12 +95,12 @@ export async function resource(
   }
 }
 
-const checkSseRequestBody = ajv.compile(resourceRequestBody);
+const checkSseRequestBody = ajv.compile(sseParams.body);
 
 export async function sse(
   req: FastifyRequest<{
-    Body: SseRequestBody;
-    Params: SseParam;
+    Body: SseParams["body"];
+    Params: SseParams["params"];
   }>,
   reply: FastifyReply
 ): Promise<void> {
@@ -128,7 +126,7 @@ export async function sse(
 
 export async function sseStream(
   req: FastifyRequest<{
-    Params: SseParam;
+    Params: SseParams["params"];
   }>,
   reply: FastifyReply
 ): Promise<void> {
@@ -170,12 +168,12 @@ export async function sseStream(
   }
 }
 
-const checkLayerRequestBody = ajv.compile(layerRequestBody);
+const checkLayerRequestBody = ajv.compile(layerParams.body);
 
 export async function layer(
   req: FastifyRequest<{
-    Body: LayerRequestBody;
-    Params: SseParam;
+    Body: LayerParams["body"];
+    Params: LayerParams["params"];
   }>,
   reply: FastifyReply
 ): Promise<void> {

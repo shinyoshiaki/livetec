@@ -5,7 +5,7 @@ import { FastifySSEPlugin } from "fastify-sse-v2";
 import {
   layerEndpoint,
   offerEndpoint,
-  resourceEndpoint,
+  iceEndpoint,
   responseHeaders,
   sseEndpoint,
   sseStreamPath,
@@ -34,10 +34,10 @@ export async function registerExternalRoutes(server: FastifyInstance) {
     }
   );
 
-  console.log(offerEndpoint.path, resourceEndpoint.path);
+  console.log(offerEndpoint.path, iceEndpoint.path);
 
   server.post(convertPath(offerEndpoint.path), offer);
-  server.patch(convertPath(resourceEndpoint.path), resource);
+  server.patch(convertPath(iceEndpoint.path), resource);
   server.post(convertPath(sseEndpoint.path), sse);
   server.get(convertPath(sseStreamPath), sseStream);
   server.post(convertPath(layerEndpoint.path), layer);

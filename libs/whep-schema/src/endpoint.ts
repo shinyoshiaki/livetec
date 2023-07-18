@@ -27,14 +27,22 @@ export const responseHeaders = {
 
 //---------------------------------------------------------------------
 
-export const offerRequestBody = string;
-export type OfferRequestBody = Static<typeof offerRequestBody>;
-const offerResponseHeaderAcceptPatch = Type.Literal(trickleIce);
-export type OfferResponseHeaderAcceptPatch = Static<
-  typeof offerResponseHeaderAcceptPatch
->;
-export const offerResponseBody = string;
-export type OfferResponseBody = Static<typeof offerResponseBody>;
+export const offerParams = {
+  body: string,
+  headers: { [responseHeaders.acceptPatch]: Type.Literal(trickleIce) },
+  responseBody: string,
+} as const;
+
+export interface OfferParams {
+  body: Static<(typeof offerParams)["body"]>;
+  headers: {
+    [key in keyof (typeof offerParams)["headers"]]: Static<
+      (typeof offerParams)["headers"][key]
+    >;
+  };
+  responseBody: Static<(typeof offerParams)["responseBody"]>;
+}
+
 export const buildLink = (
   arr: { link: string; rel: string; events?: string }[]
 ) => {
@@ -57,14 +65,14 @@ export const offerEndpoint: Endpoint = {
       description: "offer",
       requestBody: {
         content: {
-          "application/sdp": { schema: offerRequestBody },
+          "application/sdp": { schema: offerParams.body },
         },
       },
       responses: {
         "201": {
           headers: {
             [responseHeaders.acceptPatch]: {
-              schema: offerResponseHeaderAcceptPatch,
+              schema: offerParams.headers[responseHeaders.acceptPatch],
             },
             [responseHeaders.etag]: {
               schema: string,
@@ -92,42 +100,47 @@ export const offerEndpoint: Endpoint = {
             },
           },
           description: "response",
-          content: { "application/sdp": { schema: offerResponseBody } },
+          content: { "application/sdp": { schema: offerParams.responseBody } },
         } as ResponseObject,
       },
     },
   },
 };
 
-export const resourceRequestBody = string;
-export type ResourceRequestBody = Static<typeof resourceRequestBody>;
-const resourceParam = {
-  id: {
-    in: "path",
-    name: "id",
-    required: true,
-    schema: Type.String(),
-  } as ParameterObject,
-  "IF-Match": {
-    in: "header",
-    name: "IF-Match",
-    required: true,
-    schema: Type.String(),
-  } as ParameterObject,
+export const iceParams = {
+  body: string,
+  params: {
+    id: {
+      in: "path",
+      name: "id",
+      required: true,
+      schema: Type.String(),
+    } as ParameterObject,
+    "IF-Match": {
+      in: "header",
+      name: "IF-Match",
+      required: true,
+      schema: Type.String(),
+    } as ParameterObject,
+  },
 } as const;
-export type ResourceParam = {
-  [key in keyof typeof resourceParam]: string;
-};
 
-export const resourceEndpoint: Endpoint = {
-  path: `/whep/resource/{${resourceParam.id.name}}`,
+export interface IceParams {
+  body: Static<(typeof iceParams)["body"]>;
+  params: {
+    [key in keyof (typeof iceParams)["params"]]: string;
+  };
+}
+
+export const iceEndpoint: Endpoint = {
+  path: `/whep/resource/{${iceParams.params.id.name}}`,
   item: {
     patch: {
-      description: "resource",
-      parameters: Object.values(resourceParam),
+      description: "ice",
+      parameters: Object.values(iceParams.params),
       requestBody: {
         content: {
-          "application/trickle-ice-sdpfrag": { schema: resourceRequestBody },
+          "application/trickle-ice-sdpfrag": { schema: iceParams.body },
         },
       },
       responses: {
@@ -149,29 +162,34 @@ export const resourceEndpoint: Endpoint = {
   },
 };
 
-const sseParam = {
-  id: {
-    in: "path",
-    name: "id",
-    required: true,
-    schema: Type.String(),
-  } as ParameterObject,
-} as const;
-export type SseParam = {
-  [key in keyof typeof sseParam]: string;
+export const sseParams = {
+  body: Type.Array(Type.String(), { examples: ["layers"] }),
+  params: {
+    id: {
+      in: "path",
+      name: "id",
+      required: true,
+      schema: Type.String(),
+    } as ParameterObject,
+  },
 };
-const sseRequestBody = Type.Array(Type.String(), { examples: ["layers"] });
 
-export type SseRequestBody = Static<typeof sseRequestBody>;
+export interface SseParams {
+  body: Static<(typeof sseParams)["body"]>;
+  params: {
+    [key in keyof (typeof sseParams)["params"]]: string;
+  };
+}
+
 export const sseEndpoint: Endpoint = {
-  path: `/whep/resource/{${sseParam.id.name}}/sse`,
+  path: `/whep/resource/{${sseParams.params.id.name}}/sse`,
   item: {
     post: {
       description: "sse",
-      parameters: Object.values(sseParam),
+      parameters: Object.values(sseParams.params),
       requestBody: {
         content: {
-          "application/json": { schema: sseRequestBody },
+          "application/json": { schema: sseParams.body },
         },
       },
       responses: {
@@ -190,35 +208,43 @@ export const sseEndpoint: Endpoint = {
   },
 };
 
-const layerParam = {
-  id: {
-    in: "path",
-    name: "id",
-    required: true,
-    schema: Type.String(),
-  } as ParameterObject,
+export const sseStreamPath = `/whep/resource/{${sseParams.params.id.name}}/sse/event-stream`;
+
+export const layerParams = {
+  body: Type.Object({
+    mediaId: Type.Optional(Type.String()),
+    encodingId: Type.Optional(Type.String()),
+    spatialLayerId: Type.Optional(Type.String()),
+    temporalLayerId: Type.Optional(Type.String()),
+    maxSpatialLayerId: Type.Optional(Type.String()),
+    maxTemporalLayerId: Type.Optional(Type.String()),
+  }),
+  params: {
+    id: {
+      in: "path",
+      name: "id",
+      required: true,
+      schema: Type.String(),
+    } as ParameterObject,
+  },
 } as const;
-export type LayerParam = {
-  [key in keyof typeof resourceParam]: string;
-};
-export const layerRequestBody = Type.Object({
-  mediaId: Type.Optional(Type.String()),
-  encodingId: Type.Optional(Type.String()),
-  spatialLayerId: Type.Optional(Type.String()),
-  temporalLayerId: Type.Optional(Type.String()),
-  maxSpatialLayerId: Type.Optional(Type.String()),
-  maxTemporalLayerId: Type.Optional(Type.String()),
-});
-export type LayerRequestBody = Static<typeof layerRequestBody>;
+
+export interface LayerParams {
+  body: Static<(typeof layerParams)["body"]>;
+  params: {
+    [key in keyof (typeof layerParams)["params"]]: string;
+  };
+}
+
 export const layerEndpoint: Endpoint = {
-  path: `/whep/resource/{${layerParam.id.name}}/layer`,
+  path: `/whep/resource/{${layerParams.params.id.name}}/layer`,
   item: {
     post: {
       description: "layer",
-      parameters: Object.values(layerParam),
+      parameters: Object.values(layerParams.params),
       requestBody: {
         content: {
-          "application/json": { schema: layerRequestBody },
+          "application/json": { schema: layerParams.body },
         },
       },
       responses: {
@@ -229,5 +255,3 @@ export const layerEndpoint: Endpoint = {
     },
   },
 };
-
-export const sseStreamPath = `/whep/resource/{${sseParam.id.name}}/sse/event-stream`;

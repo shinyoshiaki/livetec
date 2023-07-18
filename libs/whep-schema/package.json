@@ -6,9 +6,10 @@
   "author": "",
   "private": true,
   "scripts": {
+    "doc": "run-s schema html",
     "schema": "ts-node scripts/openapi.ts",
     "html": "npx redoc-cli bundle ./docs/openapi.json -o ./docs/openapi.html",
-    "doc": "npm run schema && npm run html"
+    "type": "tsc -p ./tsconfig.json --noEmit"
   },
   "dependencies": {
     "@sinclair/typebox": "^0.28.18",

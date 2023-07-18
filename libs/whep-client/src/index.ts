@@ -72,7 +72,7 @@ export class WHEPClient extends EventTarget {
     const offer = await pc.createOffer();
 
     //Request headers
-    const headers = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/sdp",
     };
 
