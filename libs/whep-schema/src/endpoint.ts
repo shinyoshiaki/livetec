@@ -201,7 +201,7 @@ const layerParam = {
 export type LayerParam = {
   [key in keyof typeof resourceParam]: string;
 };
-const layerRequestBody = Type.Object({
+export const layerRequestBody = Type.Object({
   mediaId: Type.Optional(Type.String()),
   encodingId: Type.Optional(Type.String()),
   spatialLayerId: Type.Optional(Type.String()),

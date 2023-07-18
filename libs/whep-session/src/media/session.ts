@@ -33,6 +33,15 @@ export interface LayersEvent {
   };
 }
 
+export type RequestLayer = {
+  mediaId?: string;
+  encodingId?: string;
+  spatialLayerId?: string;
+  temporalLayerId?: string;
+  maxSpatialLayerId?: string;
+  maxTemporalLayerId?: string;
+};
+
 export type Events = LayersEvent;
 
 export const supportedEvents = ["layers"];
@@ -71,6 +80,29 @@ export class WhepMediaSession {
     return tracks;
   }
 
+  get layers() {
+    return this.props.video!.map((_, i) => ({
+      encodingId: i.toString(),
+    }));
+  }
+
+  requestLayer({ encodingId, mediaId }: RequestLayer) {
+    if (!(encodingId && mediaId)) {
+      return;
+    }
+    const transceiver = this.pc
+      .getTransceivers()
+      .find((t) => t.mid === mediaId);
+    if (!transceiver) {
+      return;
+    }
+    const track = this.props.video!.find((_, i) => i.toString() === encodingId);
+    if (!track) {
+      return;
+    }
+    transceiver.sender.replaceTrack(track);
+  }
+
   requestEvent(events: string[]) {
     this.eventList = events;
   }
@@ -88,9 +120,7 @@ export class WhepMediaSession {
         event[transceiver.mid!] = {
           active: [],
           inactive: [],
-          layers: this.props.video!.map((_, i) => ({
-            encodingId: i.toString(),
-          })),
+          layers: this.layers,
         };
       }
       this.event.execute({ event: "layers", data: event });

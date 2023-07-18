@@ -3,13 +3,14 @@ import { FastifyInstance } from "fastify";
 import { FastifySSEPlugin } from "fastify-sse-v2";
 
 import {
+  layerEndpoint,
   offerEndpoint,
   resourceEndpoint,
   responseHeaders,
   sseEndpoint,
   sseStreamPath,
 } from ".";
-import { offer, resource, sse, sseStream } from "./controller";
+import { layer, offer, resource, sse, sseStream } from "./controller";
 
 export async function registerExternalRoutes(server: FastifyInstance) {
   await server.register(cors, {
@@ -39,6 +40,7 @@ export async function registerExternalRoutes(server: FastifyInstance) {
   server.patch(convertPath(resourceEndpoint.path), resource);
   server.post(convertPath(sseEndpoint.path), sse);
   server.get(convertPath(sseStreamPath), sseStream);
+  server.post(convertPath(layerEndpoint.path), layer);
 }
 
 function convertPath(openApiPath: string): string {

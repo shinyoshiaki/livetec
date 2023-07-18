@@ -188,7 +188,9 @@ export class WHEPClient extends EventTarget {
         this.eventSource.onmessage = (event) => {
           (event as any).message = JSON.parse(event.data);
           console.dir(event);
-          this.dispatchEvent(new CustomEvent(event.type, event));
+          this.dispatchEvent(
+            new CustomEvent(event.type, { detail: JSON.parse(event.data) })
+          );
         };
       });
     }
@@ -423,14 +425,16 @@ export class WHEPClient extends EventTarget {
     });
   }
 
-  async selectLayer(layer: {
-    mediaId: string;
-    encodingId: string;
-    spatialLayerId: string;
-    temporalLayerId: string;
-    maxSpatialLayerId: string;
-    maxTemporalLayerId: string;
-  }) {
+  async selectLayer(
+    layer: Partial<{
+      mediaId: string;
+      encodingId: string;
+      spatialLayerId: string;
+      temporalLayerId: string;
+      maxSpatialLayerId: string;
+      maxTemporalLayerId: string;
+    }>
+  ) {
     if (!this.layerUrl)
       throw new Error("WHIP resource does not support layer selection");
 
