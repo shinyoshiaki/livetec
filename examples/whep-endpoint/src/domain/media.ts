@@ -1,4 +1,4 @@
-import { MediaStreamTrack, getUserMedia } from "werift";
+import { MediaStreamTrack, getUserMedia } from "../";
 
 export class MediaSource {
   audio!: MediaStreamTrack;
@@ -12,15 +12,14 @@ export class MediaSource {
     this.audio = high.audio;
     await high.start();
 
-    // const low = await getUserMedia({
-    //   path: "~/Downloads/test.mp4",
-    //   loop: true,
-    //   width: 320,
-    //   height: 240,
-    // });
-    this.video = [
-      high.video,
-      //  low.video
-    ];
+    const low = await getUserMedia({
+      path: "~/Downloads/test.mp4",
+      loop: true,
+      width: 320,
+      height: 240,
+    });
+    await low.start();
+
+    this.video = [high.video, low.video];
   }
 }

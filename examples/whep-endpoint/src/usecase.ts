@@ -69,6 +69,8 @@ export const requestLayer = ({
   id: string;
   request: RequestLayer;
 }) => {
+  console.log("requestLayer", { id, request });
+
   const session = sessionRepository.getSession(id);
   if (!session) {
     throw new Error("session not found");
