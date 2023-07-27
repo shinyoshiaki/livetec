@@ -2,20 +2,20 @@ import cors from "@fastify/cors";
 import { FastifyInstance } from "fastify";
 import { FastifySSEPlugin } from "fastify-sse-v2";
 
+import { whep, whip } from ".";
 import {
-  layerEndpoint,
-  offerEndpoint,
-  iceEndpoint,
-  responseHeaders,
-  sseEndpoint,
-  sseStreamPath,
-} from ".";
-import { layer, offer, resource, sse, sseStream } from "./controller";
+  whepLayer,
+  whepOffer,
+  whepIce,
+  whepSse,
+  whepSseStream,
+} from "./controller/whep";
+import { whipIce, whipOffer } from "./controller/whip";
 
 export async function registerExternalRoutes(server: FastifyInstance) {
   await server.register(cors, {
     origin: true,
-    exposedHeaders: Object.values(responseHeaders),
+    exposedHeaders: Object.values(whep.responseHeaders),
   });
   server.register(FastifySSEPlugin);
 
@@ -34,13 +34,14 @@ export async function registerExternalRoutes(server: FastifyInstance) {
     }
   );
 
-  console.log(offerEndpoint.path, iceEndpoint.path);
+  server.post(convertPath(whep.offerEndpoint.path), whepOffer);
+  server.patch(convertPath(whep.iceEndpoint.path), whepIce);
+  server.post(convertPath(whep.sseEndpoint.path), whepSse);
+  server.get(convertPath(whep.sseStreamPath), whepSseStream);
+  server.post(convertPath(whep.layerEndpoint.path), whepLayer);
 
-  server.post(convertPath(offerEndpoint.path), offer);
-  server.patch(convertPath(iceEndpoint.path), resource);
-  server.post(convertPath(sseEndpoint.path), sse);
-  server.get(convertPath(sseStreamPath), sseStream);
-  server.post(convertPath(layerEndpoint.path), layer);
+  server.post(convertPath(whip.offerEndpoint.path), whipOffer);
+  server.patch(convertPath(whip.iceEndpoint.path), whipIce);
 }
 
 function convertPath(openApiPath: string): string {

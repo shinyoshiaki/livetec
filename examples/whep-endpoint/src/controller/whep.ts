@@ -1,11 +1,13 @@
 import Ajv from "ajv";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { on } from "events";
-import {
-  IceParams,
-  LayerParams,
-  OfferParams,
-  SseParams,
+import { whep, whepSession } from "..";
+
+import { config } from "../config";
+import { EventEmitter } from "stream";
+import { whepUsecase } from "../dependencies";
+
+const {
   acceptPatch,
   buildLink,
   ianaLayer,
@@ -16,24 +18,15 @@ import {
   responseHeaders,
   sseParams,
   supportedEvents,
-} from ".";
-import {
-  createSession,
-  iceRequest,
-  requestLayer,
-  requestSSE,
-  startSSEStream,
-} from "./usecase";
-import { config } from "./config";
-import { EventEmitter } from "stream";
+} = { ...whep, ...whepSession };
 
 const ajv = new Ajv();
 
 const checkOfferRequestBody = ajv.compile(offerParams.body);
 
-export async function offer(
+export async function whepOffer(
   req: FastifyRequest<{
-    Body: OfferParams["body"];
+    Body: whep.OfferParams["body"];
   }>,
   reply: FastifyReply
 ): Promise<void> {
@@ -41,11 +34,11 @@ export async function offer(
     checkOfferRequestBody(req.body);
 
     const offer = req.body;
-    const { answer, etag, id } = await createSession(offer);
+    const { answer, etag, id } = await whepUsecase.createSession(offer);
 
-    const responseBody: OfferParams["responseBody"] = answer;
+    const responseBody: whep.OfferParams["responseBody"] = answer;
 
-    const location = `${config.endpoint}/resource/${id}`;
+    const location = `${config.endpoint}/whep/resource/${id}`;
 
     await reply
       .code(201)
@@ -73,11 +66,11 @@ export async function offer(
 
 const checkResourceRequestBody = ajv.compile(iceParams.body);
 
-export async function resource(
+export async function whepIce(
   req: FastifyRequest<{
-    Body: IceParams["body"];
-    Headers: IceParams["params"];
-    Params: IceParams["params"];
+    Body: whep.IceParams["body"];
+    Headers: whep.IceParams["params"];
+    Params: whep.IceParams["params"];
   }>,
   reply: FastifyReply
 ): Promise<void> {
@@ -87,7 +80,7 @@ export async function resource(
     const candidate = req.body;
     const { id } = req.params;
     const etag = req.headers["IF-Match"];
-    await iceRequest({ candidate, etag, id });
+    await whepUsecase.iceRequest({ candidate, etag, id });
 
     await reply.code(204).send();
   } catch (error) {
@@ -97,10 +90,10 @@ export async function resource(
 
 const checkSseRequestBody = ajv.compile(sseParams.body);
 
-export async function sse(
+export async function whepSse(
   req: FastifyRequest<{
-    Body: SseParams["body"];
-    Params: SseParams["params"];
+    Body: whep.SseParams["body"];
+    Params: whep.SseParams["params"];
   }>,
   reply: FastifyReply
 ): Promise<void> {
@@ -110,8 +103,8 @@ export async function sse(
     const request = req.body;
     const { id } = req.params;
 
-    requestSSE({ events: request, id });
-    const location = `${config.endpoint}/resource/${id}/sse/event-stream`;
+    whepUsecase.requestSSE({ events: request, id });
+    const location = `${config.endpoint}/whep/resource/${id}/sse/event-stream`;
 
     await reply
       .code(201)
@@ -124,16 +117,16 @@ export async function sse(
   }
 }
 
-export async function sseStream(
+export async function whepSseStream(
   req: FastifyRequest<{
-    Params: SseParams["params"];
+    Params: whep.SseParams["params"];
   }>,
   reply: FastifyReply
 ): Promise<void> {
   try {
     const { id } = req.params;
 
-    const { event, startEvent } = startSSEStream({ id });
+    const { event, startEvent } = whepUsecase.startSSEStream({ id });
 
     const eventEmitter = new EventEmitter();
     event.subscribe((event) => {
@@ -170,10 +163,10 @@ export async function sseStream(
 
 const checkLayerRequestBody = ajv.compile(layerParams.body);
 
-export async function layer(
+export async function whepLayer(
   req: FastifyRequest<{
-    Body: LayerParams["body"];
-    Params: LayerParams["params"];
+    Body: whep.LayerParams["body"];
+    Params: whep.LayerParams["params"];
   }>,
   reply: FastifyReply
 ): Promise<void> {
@@ -183,7 +176,7 @@ export async function layer(
     const request = req.body;
     const { id } = req.params;
 
-    requestLayer({ id, request });
+    whepUsecase.requestLayer({ id, request });
 
     await reply.code(200).send();
   } catch (error) {
