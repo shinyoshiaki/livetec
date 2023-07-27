@@ -40,7 +40,7 @@ export async function whipOffer(
 
 const checkResourceRequestBody = ajv.compile(iceParams.body);
 
-export async function whepIce(
+export async function whipIce(
   req: FastifyRequest<{
     Body: whip.IceParams["body"];
     Headers: whip.IceParams["params"];

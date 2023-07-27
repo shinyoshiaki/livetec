@@ -2,7 +2,7 @@ import cors from "@fastify/cors";
 import { FastifyInstance } from "fastify";
 import { FastifySSEPlugin } from "fastify-sse-v2";
 
-import { whep } from ".";
+import { whep, whip } from ".";
 import {
   whepLayer,
   whepOffer,
@@ -10,6 +10,7 @@ import {
   whepSse,
   whepSseStream,
 } from "./controller/whep";
+import { whipIce, whipOffer } from "./controller/whip";
 
 export async function registerExternalRoutes(server: FastifyInstance) {
   await server.register(cors, {
@@ -38,6 +39,9 @@ export async function registerExternalRoutes(server: FastifyInstance) {
   server.post(convertPath(whep.sseEndpoint.path), whepSse);
   server.get(convertPath(whep.sseStreamPath), whepSseStream);
   server.post(convertPath(whep.layerEndpoint.path), whepLayer);
+
+  server.post(convertPath(whip.offerEndpoint.path), whipOffer);
+  server.patch(convertPath(whip.iceEndpoint.path), whipIce);
 }
 
 function convertPath(openApiPath: string): string {

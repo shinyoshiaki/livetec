@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "sdp-transform": "^2.14.1",
-    "werift": "0.18.3",
+    "werift": "0.18.5",
     "rx.mini": "^1.4.0"
   },
   "devDependencies": {

@@ -25,9 +25,15 @@ export class WhepMediaSession {
   }
 
   async setRemoteOffer(sdp: string) {
-    this.pc.onTrack.subscribe((track) => {
+    this.pc.ontrack = ({ track, transceiver }) => {
       this.onTrack.execute(track);
-    });
+
+      track.onReceiveRtp.once((rtp) => {
+        setInterval(() => {
+          transceiver.receiver.sendRtcpPLI(rtp.header.ssrc);
+        }, 1000);
+      });
+    };
 
     await this.pc.setRemoteDescription({ type: "offer", sdp });
     const answer = await this.pc.createAnswer();
