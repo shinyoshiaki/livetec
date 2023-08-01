@@ -1,2 +1,2 @@
-export * from "./media/session";
+export * from "./session";
 export * from "werift";
