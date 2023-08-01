@@ -11,8 +11,8 @@
       "program": "${workspaceRoot}/node_modules/ts-node-dev/lib/bin.js",
       "args": [
         "--project",
-        "${workspaceRoot}/examples/whep-endpoint/tsconfig.json",
-        "${workspaceRoot}/examples/whep-endpoint/src/main.ts"
+        "${workspaceRoot}/examples/rtc-endpoint/tsconfig.json",
+        "${workspaceRoot}/examples/rtc-endpoint/src/main.ts"
       ],
       "env": {},
       "console": "integratedTerminal",
