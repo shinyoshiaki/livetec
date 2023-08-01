@@ -128,30 +128,19 @@ export async function whepSseStream(
 
     const { event, startEvent } = whepUsecase.startSSEStream({ id });
 
-    const eventEmitter = new EventEmitter();
+    reply.raw
+      .setHeader("Content-Type", "text/event-stream")
+      .setHeader("Connection", "keep-alive")
+      .setHeader("Cache-Control", "no-cache,no-transform")
+      .setHeader("Access-Control-Allow-Origin", "*");
+
     event.subscribe((event) => {
-      eventEmitter.emit("event", event);
+      reply.raw.write(`data: ${JSON.stringify(event)}\n\n`);
     });
-    event.onended = () => {
-      eventEmitter.emit("endSseStream");
-      eventEmitter.removeAllListeners();
-    };
 
-    reply.sse(
-      (async function* () {
-        for await (const [event] of on(eventEmitter, "event")) {
-          console.log("sseEvent", event);
-          if (event.name === "endSseStream") {
-            break;
-          }
-
-          yield {
-            event: event.name,
-            data: JSON.stringify(event),
-          };
-        }
-      })()
-    );
+    reply.raw.on("close", () => {
+      // client closed
+    });
 
     process.nextTick(() => {
       startEvent();
