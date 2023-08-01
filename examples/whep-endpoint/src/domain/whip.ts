@@ -6,6 +6,9 @@ export class WhipSource {
   session!: whipSession.WhepMediaSession;
 
   setup(session: whipSession.WhepMediaSession) {
+    this.audio = undefined as any;
+    this.video = [];
+
     this.session = session;
     session.onTrack.subscribe((track) => {
       if (track.kind === "audio") {

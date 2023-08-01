@@ -1,29 +1,28 @@
-import { useRef } from "react";
 import { WHIPClient } from ".";
 
 //Create whep client
 const whip = new WHIPClient();
 
 function App() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
   const play = async () => {
-    const video = videoRef.current!;
+    const pc = new RTCPeerConnection();
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: true,
     });
 
-    video.srcObject = stream;
+    const [video] = stream.getVideoTracks();
+    const [audio] = stream.getAudioTracks();
 
-    const pc = new RTCPeerConnection();
-
-    //Send all tracks
-    for (const track of stream.getTracks()) {
-      //You could add simulcast too here
-      pc.addTrack(track);
-    }
+    pc.addTransceiver(video, {
+      direction: "sendonly",
+      sendEncodings: [
+        { rid: "0", scaleResolutionDownBy: 2 },
+        { rid: "1", scaleResolutionDownBy: 1 },
+      ],
+    });
+    pc.addTrack(audio, stream);
 
     const url = "http://localhost:8801/whip";
 
@@ -34,7 +33,6 @@ function App() {
   return (
     <div>
       <button onClick={play}>publish</button>
-      <video ref={videoRef} controls autoPlay muted />
     </div>
   );
 }

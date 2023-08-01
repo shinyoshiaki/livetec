@@ -3,6 +3,7 @@ import {
   MediaStreamTrack,
   PeerConfig,
   RTCPeerConnection,
+  useSdesRTPStreamId,
 } from "werift";
 import { MediaAttributes, parse } from "sdp-transform";
 import { randomUUID } from "crypto";
@@ -15,7 +16,10 @@ export class WhepMediaSession {
   onTrack = new Event<[MediaStreamTrack]>();
 
   constructor(private config: Partial<PeerConfig> = {}) {
-    this.pc = new RTCPeerConnection(config);
+    this.pc = new RTCPeerConnection({
+      ...config,
+      headerExtensions: { video: [useSdesRTPStreamId()] },
+    });
     this.pc.connectionStateChange.subscribe((state) => {
       console.log("connectionStateChange", state);
     });
@@ -25,15 +29,17 @@ export class WhepMediaSession {
   }
 
   async setRemoteOffer(sdp: string) {
-    this.pc.ontrack = ({ track, transceiver }) => {
-      this.onTrack.execute(track);
+    this.pc.onTransceiverAdded.subscribe((transceiver) => {
+      transceiver.onTrack.subscribe((track) => {
+        this.onTrack.execute(track);
 
-      track.onReceiveRtp.once((rtp) => {
-        setInterval(() => {
-          transceiver.receiver.sendRtcpPLI(rtp.header.ssrc);
-        }, 1000);
+        track.onReceiveRtp.once((rtp) => {
+          setInterval(() => {
+            transceiver.receiver.sendRtcpPLI(rtp.header.ssrc);
+          }, 1000);
+        });
       });
-    };
+    });
 
     await this.pc.setRemoteDescription({ type: "offer", sdp });
     const answer = await this.pc.createAnswer();
