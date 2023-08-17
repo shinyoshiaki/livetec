@@ -1,8 +1,18 @@
-import { SupportedCodec } from "werift-rtp";
+import { WebmTranscoder, WebmTranscoderProps } from "./webm";
+import { DashTranscoder } from "./dash";
+
+export type Rtp2DashProps = WebmTranscoderProps;
 
 export class Rtp2Dash {
-  constructor(props: { video?: VideoCodec; audio?: AudioCodec }) {}
-}
+  webm: WebmTranscoder;
+  dash: DashTranscoder;
 
-export type VideoCodec = Exclude<SupportedCodec, "OPUS">;
-export type AudioCodec = "OPUS";
+  constructor(props: Rtp2DashProps) {
+    this.webm = new WebmTranscoder(props);
+    this.dash = new DashTranscoder();
+
+    this.webm.onOutput.subscribe((output) => {
+      this.dash.input(output);
+    });
+  }
+}
