@@ -13,7 +13,10 @@
     "#add-package": "npm init -w libs/a",
     "upgrade-interactive": "npm-check --update",
     "type": "npm run type --workspaces --if-present",
-    "doc": "npm run doc --workspaces --if-present"
+    "doc": "npm run doc --workspaces --if-present",
+    "server": "cd examples/rtc-endpoint && npm run dev",
+    "whip-client": "cd examples/whip-client && npm run dev",
+    "whep-client": "cd examples/whep-client && npm run dev"
   },
   "devDependencies": {
     "@types/jest": "^29.2.4",

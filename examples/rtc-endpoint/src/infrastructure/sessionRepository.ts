@@ -17,7 +17,7 @@ export class SessionRepository {
         codecs: {
           video: [
             new whepSession.RTCRtpCodecParameters({
-              mimeType: "video/VP8",
+              mimeType: "video/H264",
               clockRate: 90000,
               rtcpFeedback: [
                 { type: "nack" },

@@ -9,13 +9,13 @@ import { MediaAttributes, parse } from "sdp-transform";
 import { randomUUID } from "crypto";
 import Event from "rx.mini";
 
-export class WhepMediaSession {
+export class WhipMediaSession {
   readonly id = randomUUID();
   pc: RTCPeerConnection;
   etag = randomUUID();
   onTrack = new Event<[MediaStreamTrack]>();
 
-  constructor(private config: Partial<PeerConfig> = {}) {
+  constructor(config: Partial<PeerConfig> = {}) {
     this.pc = new RTCPeerConnection({
       ...config,
       headerExtensions: { video: [useSdesRTPStreamId()] },

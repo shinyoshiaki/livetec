@@ -3,9 +3,9 @@ import { whepSession, whipSession } from "..";
 export class WhipSource {
   audio!: whepSession.MediaStreamTrack;
   video: whepSession.MediaStreamTrack[] = [];
-  session!: whipSession.WhepMediaSession;
+  session!: whipSession.WhipMediaSession;
 
-  setup(session: whipSession.WhepMediaSession) {
+  setup(session: whipSession.WhipMediaSession) {
     this.audio = undefined as any;
     this.video = [];
 

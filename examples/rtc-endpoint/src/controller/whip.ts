@@ -20,6 +20,8 @@ export async function whipOffer(
     checkOfferRequestBody(req.body);
 
     const offer = req.body;
+    console.log("whipOffer", offer);
+
     const { answer, etag, id } = await whipUsecase.createSession(offer);
 
     const responseBody: whip.OfferParams["responseBody"] = answer;
