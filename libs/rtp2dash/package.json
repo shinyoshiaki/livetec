@@ -1,0 +1,23 @@
+{
+  "name": "rtp2dash",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shinyoshiaki/web-live.git"
+  },
+  "dependencies": {
+    "werift-rtp": "^0.7.15"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shinyoshiaki/web-live/issues"
+  },
+  "homepage": "https://github.com/shinyoshiaki/web-live#readme"
+}
