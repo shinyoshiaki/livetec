@@ -14,7 +14,9 @@
         "${workspaceRoot}/examples/rtc-endpoint/tsconfig.json",
         "${workspaceRoot}/examples/rtc-endpoint/src/main.ts"
       ],
-      "env": {},
+      "env": {
+        "DEBUG": "werift*"
+      },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     }

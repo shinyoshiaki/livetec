@@ -8,6 +8,7 @@ import {
   RtcpSourceCallback,
   RtpPacket,
   RtpSourceCallback,
+  RtpTimeCallback,
   SupportedCodec,
   WebmCallback,
   WebmOutput,
@@ -27,34 +28,39 @@ export class WebmTranscoder {
   videoRtcp = new RtcpSourceCallback();
   onOutput = new Event<[WebmOutput]>();
 
-  constructor(props: WebmTranscoderProps) {
-    if (!props.video && !props.audio) {
+  constructor(private props: WebmTranscoderProps) {}
+
+  start() {
+    if (!this.props.video && !this.props.audio) {
       throw new Error("at least one codec must be specified");
     }
     const tracks: WebmTrack[] = [];
-    if (props.audio) {
+    if (this.props.audio) {
       tracks.push({
         kind: "audio",
-        codec: "OPUS",
+        codec: this.props.audio,
         clockRate: 48000,
         trackNumber: 1,
       });
     }
-    if (props.video) {
+    if (this.props.video) {
       tracks.push({
         width: 640,
         height: 360,
         kind: "video",
-        codec: "VP8",
+        codec: this.props.video,
         clockRate: 90000,
         trackNumber: 2,
       });
     }
 
-    const webm = new WebmCallback(tracks, { duration: 1000 * 60 * 60 });
+    const webm = new WebmCallback(tracks, {
+      duration: 1000 * 60 * 60,
+      strictTimestamp: true,
+    });
     this.webm = webm;
     let lipsync: LipsyncCallback | undefined;
-    if (props.audio && props.video) {
+    if (this.props.audio && this.props.video) {
       lipsync = new LipsyncCallback({
         syncInterval: 3000,
         bufferLength: 5,
@@ -62,13 +68,13 @@ export class WebmTranscoder {
       });
     }
 
-    if (props.audio) {
-      const depacketizer = new DepacketizeCallback("opus");
-      const ntpTime = new NtpTimeCallback(48000);
+    if (this.props.audio) {
+      const depacketizer = new DepacketizeCallback(this.props.audio);
+      const time = new NtpTimeCallback(48000);
 
-      this.audio.pipe(ntpTime.input);
-      this.audioRtcp.pipe(ntpTime.input);
-      ntpTime.pipe(depacketizer.input);
+      this.audio.pipe(time.input);
+      this.audioRtcp.pipe(time.input);
+      time.pipe(depacketizer.input);
 
       if (lipsync) {
         depacketizer.pipe(lipsync.inputAudio);
@@ -78,18 +84,21 @@ export class WebmTranscoder {
       }
     }
 
-    if (props.video) {
+    if (this.props.video) {
       const jitterBuffer = new JitterBufferCallback(90000);
-      const ntpTime = new NtpTimeCallback(jitterBuffer.clockRate);
-      const depacketizer = new DepacketizeCallback("vp8", {
+      const time = new NtpTimeCallback(jitterBuffer.clockRate);
+      const depacketizer = new DepacketizeCallback(this.props.video, {
         isFinalPacketInSequence: (h) => h.marker,
       });
 
       this.video.pipe(jitterBuffer.input);
-      this.videoRtcp.pipe(ntpTime.input);
-      jitterBuffer.pipe(ntpTime.input);
-      ntpTime.pipe(depacketizer.input);
-
+      this.videoRtcp.pipe((o) => {
+        time.input(o);
+      });
+      jitterBuffer.pipe(time.input);
+      time.pipe((o) => {
+        depacketizer.input(o);
+      });
       if (lipsync) {
         depacketizer.pipe(lipsync.inputVideo);
         lipsync.pipeVideo(webm.inputVideo);
@@ -104,7 +113,7 @@ export class WebmTranscoder {
   }
 
   inputAudioRtp = (rtp: RtpPacket) => {
-    this.audio.input(rtp);
+    this.audio.input(rtp.clone());
   };
 
   inputAudioRtcp = (rtcp: RtcpPacket) => {
@@ -112,7 +121,12 @@ export class WebmTranscoder {
   };
 
   inputVideoRtp = (rtp: RtpPacket) => {
-    this.video.input(rtp);
+    if (rtp.payload.length === 0) {
+      console.log("empty payload");
+      return;
+    }
+    const cloned = rtp.clone();
+    this.video.input(cloned);
   };
 
   inputVideoRtcp = (rtcp: RtcpPacket) => {

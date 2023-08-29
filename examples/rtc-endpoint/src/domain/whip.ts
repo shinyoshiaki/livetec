@@ -1,9 +1,11 @@
 import { whepSession, whipSession } from "..";
+import { DashSource } from "./dash";
 
 export class WhipSource {
   audio!: whepSession.MediaStreamTrack;
   video: whepSession.MediaStreamTrack[] = [];
   session!: whipSession.WhipMediaSession;
+  dash = new DashSource();
 
   setup(session: whipSession.WhipMediaSession) {
     this.audio = undefined as any;
@@ -16,6 +18,7 @@ export class WhipSource {
       } else {
         this.video.push(track);
       }
+      this.dash.register(track);
     });
   }
 }

@@ -12,7 +12,7 @@
     "url": "git+https://github.com/shinyoshiaki/web-live.git"
   },
   "dependencies": {
-    "werift-rtp": "^0.7.17",
+    "werift-rtp": "^0.7.19",
     "rx.mini": "^1.4.0",
     "xmlbuilder2": "^3.1.1"
   },

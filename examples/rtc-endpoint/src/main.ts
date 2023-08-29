@@ -1,7 +1,11 @@
 import fastify from "fastify";
 import { config } from "./config";
 import { setup } from "./dependencies";
-import { registerExternalRoutes as registerRoutes } from "./routes";
+import {
+  registerExternalRoutes as registerRoutes,
+  registerStaticRoutes,
+} from "./routes";
+import { createServer } from "http";
 
 const server = fastify({});
 
@@ -18,4 +22,8 @@ const server = fastify({});
       console.log("server listened");
     }
   });
+
+  const dashServer = createServer();
+  registerStaticRoutes(dashServer);
+  dashServer.listen(config.staticPort);
 })();

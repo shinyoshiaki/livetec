@@ -11,6 +11,9 @@ import {
   whepSseStream,
 } from "./controller/whep";
 import { whipIce, whipOffer } from "./controller/whip";
+import { IncomingMessage, Server, ServerResponse } from "http";
+import path from "path";
+import { readFile } from "fs/promises";
 
 export async function registerExternalRoutes(server: FastifyInstance) {
   await server.register(cors, {
@@ -46,4 +49,36 @@ export async function registerExternalRoutes(server: FastifyInstance) {
 
 function convertPath(openApiPath: string): string {
   return openApiPath.replace(/{(.*?)}/g, ":$1");
+}
+
+const dir = "./dash";
+
+export function registerStaticRoutes(
+  server: Server<typeof IncomingMessage, typeof ServerResponse>
+) {
+  server.on("request", async (req, res) => {
+    const filePath = dir + req.url;
+
+    // console.log({ filePath });
+
+    const extname = String(path.extname(filePath)).toLowerCase();
+    const mimeTypes: any = {
+      ".mpd": "application/dash+xml",
+      ".webm": "video/webm",
+    };
+
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Request-Method", "*");
+    res.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+
+    try {
+      const file = await readFile(filePath);
+      res.writeHead(200, { "Content-Type": mimeTypes[extname] });
+      res.end(file);
+    } catch (error) {
+      res.writeHead(404);
+      res.end();
+    }
+  });
 }

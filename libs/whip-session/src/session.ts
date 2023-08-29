@@ -5,7 +5,7 @@ import {
   RTCPeerConnection,
   useSdesRTPStreamId,
 } from "werift";
-import { MediaAttributes, parse } from "sdp-transform";
+import { MediaAttributes, parse, write } from "sdp-transform";
 import { randomUUID } from "crypto";
 import Event from "rx.mini";
 
@@ -34,9 +34,11 @@ export class WhipMediaSession {
         this.onTrack.execute(track);
 
         track.onReceiveRtp.once((rtp) => {
-          setInterval(() => {
-            transceiver.receiver.sendRtcpPLI(rtp.header.ssrc);
-          }, 1000);
+          if (track.kind === "video") {
+            setInterval(() => {
+              transceiver.receiver.sendRtcpPLI(rtp.header.ssrc);
+            }, 1000);
+          }
         });
       });
     });
@@ -45,7 +47,9 @@ export class WhipMediaSession {
     const answer = await this.pc.createAnswer();
     await this.pc.setLocalDescription(answer);
 
-    return { answer: this.pc.localDescription!.sdp, etag: this.etag };
+    const obj = parse(this.pc.localDescription!.sdp);
+
+    return { answer: write(obj), etag: this.etag };
   }
 
   async iceRequest({ etag, candidate }: { etag: string; candidate: string }) {

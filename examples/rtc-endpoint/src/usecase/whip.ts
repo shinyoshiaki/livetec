@@ -10,13 +10,15 @@ export class WhipUsecase {
       codecs: {
         video: [
           new RTCRtpCodecParameters({
-            mimeType: "video/H264",
+            mimeType: "video/h264",
             clockRate: 90000,
             rtcpFeedback: [
               { type: "nack" },
               { type: "nack", parameter: "pli" },
               { type: "goog-remb" },
             ],
+            parameters:
+              "profile-level-id=42e01f;packetization-mode=1;level-asymmetry-allowed=1",
           }),
         ],
         audio: [

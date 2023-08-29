@@ -23,6 +23,7 @@ export async function whipOffer(
     console.log("whipOffer", offer);
 
     const { answer, etag, id } = await whipUsecase.createSession(offer);
+    console.log("answer", answer);
 
     const responseBody: whip.OfferParams["responseBody"] = answer;
 
@@ -36,6 +37,7 @@ export async function whipOffer(
       })
       .send(responseBody);
   } catch (error) {
+    console.error("whipOffer error", error);
     await reply.code(500).send({ error });
   }
 }
@@ -60,6 +62,7 @@ export async function whipIce(
 
     await reply.code(204).send();
   } catch (error) {
+    console.error("whipIce error", error);
     await reply.code(500).send({ error });
   }
 }
