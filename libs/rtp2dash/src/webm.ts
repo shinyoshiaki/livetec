@@ -62,7 +62,7 @@ export class WebmTranscoder {
     let lipsync: LipsyncCallback | undefined;
     if (this.props.audio && this.props.video) {
       lipsync = new LipsyncCallback({
-        syncInterval: 3000,
+        syncInterval: 3_000,
         bufferLength: 5,
         fillDummyAudioPacket: Buffer.from([0xf8, 0xff, 0xfe]),
       });
@@ -70,7 +70,7 @@ export class WebmTranscoder {
 
     if (this.props.audio) {
       const depacketizer = new DepacketizeCallback(this.props.audio);
-      const time = new NtpTimeCallback(48000);
+      const time = new RtpTimeCallback(48000);
 
       this.audio.pipe(time.input);
       this.audioRtcp.pipe(time.input);
@@ -86,12 +86,12 @@ export class WebmTranscoder {
 
     if (this.props.video) {
       const jitterBuffer = new JitterBufferCallback(90000);
-      const time = new NtpTimeCallback(jitterBuffer.clockRate);
+      const time = new RtpTimeCallback(90000);
       const depacketizer = new DepacketizeCallback(this.props.video, {
         isFinalPacketInSequence: (h) => h.marker,
       });
 
-      this.video.pipe(jitterBuffer.input);
+      this.video.pipe(time.input);
       this.videoRtcp.pipe((o) => {
         time.input(o);
       });
@@ -103,7 +103,9 @@ export class WebmTranscoder {
         depacketizer.pipe(lipsync.inputVideo);
         lipsync.pipeVideo(webm.inputVideo);
       } else {
-        depacketizer.pipe(webm.inputVideo);
+        depacketizer.pipe((o) => {
+          webm.inputVideo(o);
+        });
       }
     }
 

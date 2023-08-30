@@ -9,8 +9,8 @@ export class DashSource {
   constructor() {
     try {
       rmSync("./dash", { recursive: true });
-      mkdirSync("./dash");
     } catch (error) {}
+    mkdirSync("./dash", { recursive: true });
 
     this.dash.onOutput.subscribe(async (o) => {
       switch (o.operation) {

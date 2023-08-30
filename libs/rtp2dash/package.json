@@ -5,14 +5,14 @@
   "main": "index.js",
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -p tsconfig.production.json"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shinyoshiaki/web-live.git"
   },
   "dependencies": {
-    "werift-rtp": "^0.7.19",
+    "werift-rtp": "file:../rtp",
     "rx.mini": "^1.4.0",
     "xmlbuilder2": "^3.1.1"
   },

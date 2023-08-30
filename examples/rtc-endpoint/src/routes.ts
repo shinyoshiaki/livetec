@@ -59,8 +59,6 @@ export function registerStaticRoutes(
   server.on("request", async (req, res) => {
     const filePath = dir + req.url;
 
-    // console.log({ filePath });
-
     const extname = String(path.extname(filePath)).toLowerCase();
     const mimeTypes: any = {
       ".mpd": "application/dash+xml",
