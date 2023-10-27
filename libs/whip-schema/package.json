@@ -1,14 +1,19 @@
 {
   "name": "@livetech/whip-schema",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "license": "ISC",
   "author": "",
-  "private": true,
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
   "scripts": {
+    "build": "tsc",
+    "deploy": "npm run build && npm publish --access public",
     "doc": "run-s schema html",
-    "schema": "ts-node scripts/openapi.ts",
     "html": "npx redoc-cli bundle ./docs/openapi.json -o ./docs/openapi.html",
+    "schema": "ts-node scripts/openapi.ts",
     "type": "tsc -p ./tsconfig.json --noEmit"
   },
   "dependencies": {
