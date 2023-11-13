@@ -14,6 +14,7 @@ import {
   WebmOutput,
   WebmTrack,
 } from "werift-rtp";
+import { ContainerOutput } from "./base";
 
 const dummyOpusPacket = Buffer.from([0xf8, 0xff, 0xfe]);
 
@@ -28,7 +29,7 @@ export class WebmTranscoder {
   audioRtcp = new RtcpSourceCallback();
   video = new RtpSourceCallback();
   videoRtcp = new RtcpSourceCallback();
-  onOutput = new Event<[WebmOutput]>();
+  onOutput = new Event<[ContainerOutput]>();
 
   constructor(private props: WebmTranscoderProps) {}
 
@@ -113,7 +114,24 @@ export class WebmTranscoder {
     }
 
     webm.pipe(async (o) => {
-      this.onOutput.execute(o);
+      if (o.saveToFile) {
+        if (o.kind === "initial") {
+          this.onOutput.execute({
+            operation: "write",
+            init: o.saveToFile,
+          });
+        } else if (o.kind === "cluster") {
+          this.onOutput.execute({
+            operation: "write",
+            chunk: o.saveToFile,
+          });
+        } else if (o.kind === "block") {
+          this.onOutput.execute({
+            operation: "append",
+            chunk: o.saveToFile,
+          });
+        }
+      }
     });
   }
 

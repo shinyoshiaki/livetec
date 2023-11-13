@@ -36,19 +36,19 @@ export class DashSource {
   register(track: MediaStreamTrack) {
     if (track.kind === "audio") {
       track.onReceiveRtp.subscribe((p) => {
-        this.dash.webm.inputAudioRtp(p);
+        this.dash.container.inputAudioRtp(p);
       });
       track.onReceiveRtcp.subscribe((p) => {
         console.log("rtcp audio", p);
-        this.dash.webm.inputAudioRtcp(p);
+        this.dash.container.inputAudioRtcp(p);
       });
     } else {
       track.onReceiveRtp.subscribe((p) => {
-        this.dash.webm.inputVideoRtp(p);
+        this.dash.container.inputVideoRtp(p);
       });
       track.onReceiveRtcp.subscribe((p) => {
         console.log("rtcp video", p);
-        this.dash.webm.inputVideoRtcp(p);
+        this.dash.container.inputVideoRtcp(p);
       });
     }
   }

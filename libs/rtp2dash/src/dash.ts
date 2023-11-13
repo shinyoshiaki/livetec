@@ -1,6 +1,7 @@
 import Event from "rx.mini";
 import { WebmOutput } from "werift-rtp";
 import { MPD } from "./mpd";
+import { ContainerOutput } from "./container/base";
 
 export interface DashTranscoderProps {
   dashCodecs?: string[];
@@ -24,52 +25,44 @@ export class DashTranscoder {
     });
   }
 
-  input({ saveToFile, kind, previousDuration }: WebmOutput) {
-    if (saveToFile && kind) {
-      switch (kind) {
-        case "initial":
-          {
-            this.onOutput.execute({
-              filename: "init.webm",
-              data: saveToFile,
-              operation: "write",
-            });
-          }
-          break;
-        case "cluster":
-          {
-            if (previousDuration! > 0) {
-              // MPDにクラスターの長さを書き込む
-              this.mpd.segmentationTimeLine.push({
-                d: previousDuration!,
-                t: this.timestamp,
-              });
-              this.onOutput.execute({
-                filename: "dash.mpd",
-                data: Buffer.from(this.mpd.build()),
-                operation: "write",
-              });
+  input({ init, chunk, operation, previousDuration }: ContainerOutput) {
+    if (init) {
+      this.onOutput.execute({
+        filename: "init.webm",
+        data: init,
+        operation: "write",
+      });
+    }
 
-              this.timestamp += previousDuration!;
-            }
+    if (chunk) {
+      if (operation === "write") {
+        if (previousDuration! > 0) {
+          // MPDにクラスターの長さを書き込む
+          this.mpd.segmentationTimeLine.push({
+            d: previousDuration!,
+            t: this.timestamp,
+          });
+          this.onOutput.execute({
+            filename: "dash.mpd",
+            data: Buffer.from(this.mpd.build()),
+            operation: "write",
+          });
 
-            this.number++;
-            this.onOutput.execute({
-              filename: `media${this.number}.webm`,
-              data: saveToFile,
-              operation: "write",
-            });
-          }
-          break;
-        case "block":
-          {
-            this.onOutput.execute({
-              filename: `media${this.number}.webm`,
-              data: saveToFile,
-              operation: "append",
-            });
-          }
-          break;
+          this.timestamp += previousDuration!;
+        }
+
+        this.number++;
+        this.onOutput.execute({
+          filename: `media${this.number}.webm`,
+          data: chunk,
+          operation: "write",
+        });
+      } else if (operation === "append") {
+        this.onOutput.execute({
+          filename: `media${this.number}.webm`,
+          data: chunk,
+          operation: "append",
+        });
       }
     }
   }
