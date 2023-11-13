@@ -29,8 +29,11 @@ export class WhipMediaSession {
   }
 
   async setRemoteOffer(sdp: string) {
+    console.log("setRemoteOffer", sdp);
+
     this.pc.onTransceiverAdded.subscribe((transceiver) => {
       transceiver.onTrack.subscribe((track) => {
+        console.log("onTrack", track.kind);
         this.onTrack.execute(track);
 
         track.onReceiveRtp.once((rtp) => {

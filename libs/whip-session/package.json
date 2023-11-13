@@ -1,6 +1,6 @@
 {
   "name": "@livetech/whip-session",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "",
   "homepage": "https://github.com/shinyoshiaki/weblive#readme",
   "bugs": {
@@ -12,14 +12,19 @@
   },
   "license": "ISC",
   "author": "",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
   "scripts": {
+    "build": "tsc",
+    "deploy": "npm run build && npm publish --access public",
     "type": "tsc -p ./tsconfig.json --noEmit"
   },
   "dependencies": {
+    "rx.mini": "^1.4.0",
     "sdp-transform": "^2.14.1",
-    "werift": "0.18.5",
-    "rx.mini": "^1.4.0"
+    "werift": "0.18.8"
   },
   "devDependencies": {
     "@types/sdp-transform": "^2.4.6"
