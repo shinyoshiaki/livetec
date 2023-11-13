@@ -4,7 +4,11 @@ import { appendFile, writeFile } from "fs/promises";
 import { mkdirSync, rmSync } from "fs";
 
 export class DashSource {
-  dash = new dash.Rtp2Dash({ audio: "OPUS", video: "MPEG4/ISO/AVC" });
+  dash = new dash.Rtp2Dash({
+    audio: "OPUS",
+    video: "MPEG4/ISO/AVC",
+    dashCodecs: ["avc1.42E01F", "opus"],
+  });
 
   constructor() {
     try {
@@ -35,6 +39,7 @@ export class DashSource {
         this.dash.webm.inputAudioRtp(p);
       });
       track.onReceiveRtcp.subscribe((p) => {
+        console.log("rtcp audio", p);
         this.dash.webm.inputAudioRtcp(p);
       });
     } else {
@@ -42,6 +47,7 @@ export class DashSource {
         this.dash.webm.inputVideoRtp(p);
       });
       track.onReceiveRtcp.subscribe((p) => {
+        console.log("rtcp video", p);
         this.dash.webm.inputVideoRtcp(p);
       });
     }

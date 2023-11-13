@@ -37,6 +37,7 @@ export interface WebmOption {
   duration?: number;
   encryptionKey?: Buffer;
   strictTimestamp?: boolean;
+  waitForVideoKeyframe?: boolean;
 }
 
 export class WebmBase implements AVProcessor<WebmInput> {
@@ -126,6 +127,10 @@ export class WebmBase implements AVProcessor<WebmInput> {
   }
 
   processAudioInput = (input: WebmInput) => {
+    if (this.options.waitForVideoKeyframe && !this.videoKeyframeReceived) {
+      return;
+    }
+
     const track = this.tracks.find((t) => t.kind === "audio");
     if (track) {
       this.internalStats["processAudioInput"] = new Date().toISOString();

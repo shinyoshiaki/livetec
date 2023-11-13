@@ -34,6 +34,7 @@ export class JitterBufferBase
     this.options = {
       latency: options.latency ?? 200,
       bufferSize: options.bufferSize ?? 10000,
+      logging: options.logging ?? false,
     };
   }
 
@@ -80,18 +81,25 @@ export class JitterBufferBase
           output.push({ rtp });
         }
       }
-      this.internalStats["jitterBuffer"] = new Date().toISOString();
+      this.setStat("jitterBuffer", new Date().toISOString(), false);
       return output;
     } else {
       if (packets) {
         for (const rtp of packets) {
           output.push({ rtp });
         }
-        this.internalStats["jitterBuffer"] = new Date().toISOString();
+        this.setStat("jitterBuffer", new Date().toISOString(), false);
         return output;
       }
       return [];
     }
+  }
+
+  private setStat(key: string, value: any, logging = true) {
+    if (this.options.logging && logging) {
+      console.log(key, value);
+    }
+    this.internalStats[key] = value;
   }
 
   private processRtp(rtp: RtpPacket): RequireAtLeastOne<{
@@ -109,11 +117,11 @@ export class JitterBufferBase
 
     // duplicate
     if (uint16Gte(this.presentSeqNum, sequenceNumber)) {
-      this.internalStats["duplicate"] = {
+      this.setStat("duplicate", {
         count: (this.internalStats["duplicate"]?.count ?? 0) + 1,
         sequenceNumber,
         timestamp: new Date().toISOString(),
-      };
+      });
       return { nothing: undefined };
     }
 
@@ -144,10 +152,10 @@ export class JitterBufferBase
 
   private pushRtpBuffer(rtp: RtpPacket) {
     if (Object.values(this.rtpBuffer).length > this.options.bufferSize) {
-      this.internalStats["buffer_overflow"] = {
+      this.setStat("buffer_overflow", {
         count: (this.internalStats["buffer_overflow"]?.count ?? 0) + 1,
         timestamp: new Date().toISOString(),
-      };
+      });
       return;
     }
 
@@ -202,14 +210,14 @@ export class JitterBufferBase
           uint32Add(baseTimestamp, -timestamp) / this.clockRate;
 
         if (elapsedSec * 1000 > this.options.latency) {
-          this.internalStats["timeout_packet"] = {
+          this.setStat("timeout_packet", {
             count: (this.internalStats["timeout_packet"]?.count ?? 0) + 1,
             at: new Date().toISOString(),
             sequenceNumber,
             elapsedSec,
             baseTimestamp,
             timestamp,
-          };
+          });
 
           if (latestTimeoutSeqNum == undefined) {
             latestTimeoutSeqNum = sequenceNumber;
@@ -245,4 +253,5 @@ export interface JitterBufferOptions {
   /**milliseconds */
   latency: number;
   bufferSize: number;
+  logging?: boolean;
 }

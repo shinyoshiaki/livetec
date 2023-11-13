@@ -1,8 +1,8 @@
 import { WebmTranscoder, WebmTranscoderProps } from "./webm";
-import { DashTranscoder } from "./dash";
+import { DashTranscoder, DashTranscoderProps } from "./dash";
 import Event from "rx.mini";
 
-export type Rtp2DashProps = WebmTranscoderProps;
+export type Rtp2DashProps = WebmTranscoderProps & DashTranscoderProps;
 
 export class Rtp2Dash {
   webm: WebmTranscoder;
@@ -21,7 +21,7 @@ export class Rtp2Dash {
 
   start() {
     this.webm = new WebmTranscoder(this.props);
-    this.dash = new DashTranscoder();
+    this.dash = new DashTranscoder(this.props);
     this.webm.onOutput.subscribe((output) => {
       this.dash.input(output);
     });

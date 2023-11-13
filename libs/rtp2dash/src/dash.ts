@@ -2,6 +2,10 @@ import Event from "rx.mini";
 import { WebmOutput } from "werift-rtp";
 import { MPD } from "./mpd";
 
+export interface DashTranscoderProps {
+  dashCodecs?: string[];
+}
+
 export class DashTranscoder {
   timestamp = 0;
   number = -1;
@@ -10,9 +14,11 @@ export class DashTranscoder {
     [{ filename: string; data: Buffer; operation: "append" | "write" }]
   >();
 
-  constructor() {
+  constructor(props: DashTranscoderProps = {}) {
+    const codecs = props.dashCodecs ?? ["vp8", "opus"];
+
     this.mpd = new MPD({
-      codecs: ["vp8", "opus"],
+      codecs,
       minBufferTime: 5,
       minimumUpdatePeriod: 1,
     });

@@ -15,6 +15,8 @@ import {
   WebmTrack,
 } from "werift-rtp";
 
+const dummyOpusPacket = Buffer.from([0xf8, 0xff, 0xfe]);
+
 export interface WebmTranscoderProps {
   video?: VideoCodec;
   audio?: AudioCodec;
@@ -56,6 +58,7 @@ export class WebmTranscoder {
 
     const webm = new WebmCallback(tracks, {
       duration: 1000 * 60 * 60,
+      waitForVideoKeyframe: true,
       strictTimestamp: true,
     });
     this.webm = webm;
@@ -64,7 +67,7 @@ export class WebmTranscoder {
       lipsync = new LipsyncCallback({
         syncInterval: 3_000,
         bufferLength: 5,
-        fillDummyAudioPacket: Buffer.from([0xf8, 0xff, 0xfe]),
+        fillDummyAudioPacket: dummyOpusPacket,
       });
     }
 
@@ -91,7 +94,7 @@ export class WebmTranscoder {
         isFinalPacketInSequence: (h) => h.marker,
       });
 
-      this.video.pipe(time.input);
+      this.video.pipe(jitterBuffer.input);
       this.videoRtcp.pipe((o) => {
         time.input(o);
       });
