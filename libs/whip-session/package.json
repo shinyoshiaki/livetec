@@ -1,6 +1,6 @@
 {
   "name": "@livetech/whip-session",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "homepage": "https://github.com/shinyoshiaki/weblive#readme",
   "bugs": {
@@ -24,7 +24,7 @@
   "dependencies": {
     "rx.mini": "^1.4.0",
     "sdp-transform": "^2.14.1",
-    "werift": "0.18.5"
+    "werift": "0.18.8"
   },
   "devDependencies": {
     "@types/sdp-transform": "^2.4.6"
