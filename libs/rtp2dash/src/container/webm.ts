@@ -3,7 +3,6 @@ import {
   DepacketizeCallback,
   JitterBufferCallback,
   LipsyncCallback,
-  NtpTimeCallback,
   RtcpPacket,
   RtcpSourceCallback,
   RtpPacket,
@@ -11,10 +10,9 @@ import {
   RtpTimeCallback,
   SupportedCodec,
   WebmCallback,
-  WebmOutput,
   WebmTrack,
 } from "werift-rtp";
-import { ContainerOutput } from "./base";
+import { ContainerOutput, ContainerTranscoder } from "./base";
 
 const dummyOpusPacket = Buffer.from([0xf8, 0xff, 0xfe]);
 
@@ -23,7 +21,7 @@ export interface WebmTranscoderProps {
   audio?: AudioCodec;
 }
 
-export class WebmTranscoder {
+export class WebmTranscoder implements ContainerTranscoder {
   webm: WebmCallback;
   audio = new RtpSourceCallback();
   audioRtcp = new RtcpSourceCallback();
@@ -59,7 +57,6 @@ export class WebmTranscoder {
 
     const webm = new WebmCallback(tracks, {
       duration: 1000 * 60 * 60,
-      waitForVideoKeyframe: true,
       strictTimestamp: true,
     });
     this.webm = webm;
@@ -124,6 +121,7 @@ export class WebmTranscoder {
           this.onOutput.execute({
             operation: "write",
             chunk: o.saveToFile,
+            previousDuration: o.previousDuration,
           });
         } else if (o.kind === "block") {
           this.onOutput.execute({

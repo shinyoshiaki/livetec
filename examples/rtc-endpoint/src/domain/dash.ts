@@ -4,28 +4,33 @@ import { appendFile, writeFile } from "fs/promises";
 import { mkdirSync, rmSync } from "fs";
 
 export class DashSource {
-  dash = new dash.Rtp2Dash({
-    audio: "OPUS",
-    video: "MPEG4/ISO/AVC",
-    dashCodecs: ["avc1.42E01F", "opus"],
-  });
+  dash: dash.Rtp2Dash;
 
   constructor() {
+    this.dash = new dash.Rtp2Dash({
+      audio: "opus",
+      video: "avc1",
+      dashCodecs: ["avc1.42E01F", "opus"],
+      container: "mp4",
+    });
+
     try {
       rmSync("./dash", { recursive: true });
     } catch (error) {}
     mkdirSync("./dash", { recursive: true });
 
     this.dash.onOutput.subscribe(async (o) => {
+      const filename = "./dash/" + o.filename;
+
       switch (o.operation) {
         case "write":
           {
-            await writeFile("./dash/" + o.filename, o.data);
+            await writeFile(filename, o.data);
           }
           break;
         case "append":
           {
-            await appendFile("./dash/" + o.filename, o.data);
+            await appendFile(filename, o.data);
           }
           break;
       }
@@ -39,7 +44,7 @@ export class DashSource {
         this.dash.container.inputAudioRtp(p);
       });
       track.onReceiveRtcp.subscribe((p) => {
-        console.log("rtcp audio", p);
+        // console.log("rtcp audio", p);
         this.dash.container.inputAudioRtcp(p);
       });
     } else {
@@ -47,7 +52,7 @@ export class DashSource {
         this.dash.container.inputVideoRtp(p);
       });
       track.onReceiveRtcp.subscribe((p) => {
-        console.log("rtcp video", p);
+        // console.log("rtcp video", p);
         this.dash.container.inputVideoRtcp(p);
       });
     }

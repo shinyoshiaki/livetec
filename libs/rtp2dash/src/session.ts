@@ -1,12 +1,13 @@
 import { ContainerTranscoder } from "./container/base";
 import { containerTranscoderFactory } from "./container/factory";
+import { Mp4TranscoderProps } from "./container/mp4";
 import { WebmTranscoderProps } from "./container/webm";
 import { DashTranscoder, DashTranscoderProps } from "./dash";
 import Event from "rx.mini";
 
 export type Rtp2DashProps = DashTranscoderProps & {
   container: "webm" | "mp4";
-} & (WebmTranscoderProps | {});
+} & (Mp4TranscoderProps | WebmTranscoderProps | {});
 
 export class Rtp2Dash {
   container: ContainerTranscoder;

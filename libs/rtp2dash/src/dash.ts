@@ -1,10 +1,10 @@
 import Event from "rx.mini";
-import { WebmOutput } from "werift-rtp";
 import { MPD } from "./mpd";
 import { ContainerOutput } from "./container/base";
 
 export interface DashTranscoderProps {
   dashCodecs?: string[];
+  container: "webm" | "mp4";
 }
 
 export class DashTranscoder {
@@ -15,7 +15,7 @@ export class DashTranscoder {
     [{ filename: string; data: Buffer; operation: "append" | "write" }]
   >();
 
-  constructor(props: DashTranscoderProps = {}) {
+  constructor(private props: DashTranscoderProps) {
     const codecs = props.dashCodecs ?? ["vp8", "opus"];
 
     this.mpd = new MPD({
@@ -28,7 +28,7 @@ export class DashTranscoder {
   input({ init, chunk, operation, previousDuration }: ContainerOutput) {
     if (init) {
       this.onOutput.execute({
-        filename: "init.webm",
+        filename: "init." + this.props.container,
         data: init,
         operation: "write",
       });
@@ -53,13 +53,16 @@ export class DashTranscoder {
 
         this.number++;
         this.onOutput.execute({
-          filename: `media${this.number}.webm`,
+          filename: `media${this.number}.${this.props.container}`,
           data: chunk,
           operation: "write",
         });
       } else if (operation === "append") {
+        if (this.number < 0) {
+          return;
+        }
         this.onOutput.execute({
-          filename: `media${this.number}.webm`,
+          filename: `media${this.number}.${this.props.container}`,
           data: chunk,
           operation: "append",
         });

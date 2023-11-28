@@ -10,6 +10,7 @@ dist
 *.key
 *.mpd
 *.mp3
+*.mp4
 *.pcm
 vosk-model*
 *.7z*
