@@ -14,6 +14,8 @@
     "upgrade-interactive": "npm-check --update",
     "type": "npm run type --workspaces --if-present",
     "doc": "npm run doc --workspaces --if-present",
+    "submodule:init": "git submodule update --init --recursive",
+    "submodule:build": "cd submodules/werift && npm i && npm run build",
     "server": "cd examples/rtc-endpoint && npm run dev",
     "whip-client": "cd examples/whip-client && npm run dev",
     "whep-client": "cd examples/whep-client && npm run dev"
