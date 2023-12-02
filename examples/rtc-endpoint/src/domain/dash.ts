@@ -8,10 +8,14 @@ export class DashSource {
 
   constructor() {
     this.dash = new dash.Rtp2Dash({
-      audio: "opus",
-      video: "avc1",
-      dashCodecs: ["avc1.42E01F", "opus"],
-      container: "mp4",
+      codecs: [
+        {
+          mimeType: "video/avc1.42e01f",
+          represententions: [{ width: 1920, height: 1080 }],
+        },
+        { mimeType: "audio/opus" },
+      ],
+      container: { format: "mp4", audio: "opus", video: "avc1" },
     });
 
     try {
@@ -41,19 +45,19 @@ export class DashSource {
   register(track: MediaStreamTrack) {
     if (track.kind === "audio") {
       track.onReceiveRtp.subscribe((p) => {
-        this.dash.container.inputAudioRtp(p);
+        this.dash.audio.inputRtp(p);
       });
       track.onReceiveRtcp.subscribe((p) => {
         // console.log("rtcp audio", p);
-        this.dash.container.inputAudioRtcp(p);
+        this.dash.audio.inputRtcp(p);
       });
     } else {
       track.onReceiveRtp.subscribe((p) => {
-        this.dash.container.inputVideoRtp(p);
+        this.dash.video.inputRtp(p);
       });
       track.onReceiveRtcp.subscribe((p) => {
         // console.log("rtcp video", p);
-        this.dash.container.inputVideoRtcp(p);
+        this.dash.video.inputRtcp(p);
       });
     }
   }

@@ -1,5 +1,5 @@
 import Event from "rx.mini";
-import { ContainerOutput, ContainerTranscoder } from "./base";
+import { ContainerOutput, AudioTranscoder, VideoTranscoder } from "./base";
 import {
   DepacketizeCallback,
   JitterBufferCallback,
@@ -17,24 +17,68 @@ export interface Mp4TranscoderProps {
   audio?: "opus";
 }
 
-export class Mp4Transcoder implements ContainerTranscoder {
+export class Mp4Audio implements AudioTranscoder {
   onOutput: Event<[ContainerOutput]> = new Event<[ContainerOutput]>();
   audio = new RtpSourceCallback();
-  video = new RtpSourceCallback();
   audioRtcp = new RtcpSourceCallback();
+  previousDuration = 0;
+
+  constructor(private props: Mp4TranscoderProps) {}
+
+  start(): void {
+    {
+      const m4a = new MP4Callback([
+        {
+          kind: "audio",
+          codec: this.props.audio ?? "opus",
+          clockRate: 48000,
+          trackNumber: 1,
+        },
+      ]);
+      const depacketizer = new DepacketizeCallback("opus");
+      const time = new RtpTimeCallback(48000);
+
+      this.audio.pipe(time.input);
+      time.pipe(depacketizer.input);
+      depacketizer.pipe(m4a.inputAudio);
+
+      m4a.pipe(async (o) => {
+        if (o.type === "init") {
+          this.onOutput.execute({
+            operation: "write",
+            init: Buffer.from(o.data),
+          });
+        } else {
+          this.previousDuration += o.duration;
+
+          this.onOutput.execute({
+            operation: "append",
+            chunk: Buffer.from(o.data),
+          });
+        }
+      });
+    }
+  }
+
+  inputRtcp(packet: RtcpPacket): void {
+    this.audioRtcp.input(packet);
+  }
+
+  inputRtp(packet: RtpPacket): void {
+    this.audio.input(packet);
+  }
+}
+
+export class Mp4Video implements VideoTranscoder {
+  onOutput: Event<[ContainerOutput]> = new Event<[ContainerOutput]>();
+  video = new RtpSourceCallback();
   videoRtcp = new RtcpSourceCallback();
   previousDuration = 0;
 
   constructor(private props: Mp4TranscoderProps) {}
 
   start(): void {
-    const mp4 = new MP4Callback([
-      {
-        kind: "audio",
-        codec: this.props.audio ?? "opus",
-        clockRate: 48000,
-        trackNumber: 1,
-      },
+    const m4v = new MP4Callback([
       {
         width: 640,
         height: 360,
@@ -45,34 +89,22 @@ export class Mp4Transcoder implements ContainerTranscoder {
       },
     ]);
 
-    {
-      const depacketizer = new DepacketizeCallback("opus");
-      const time = new RtpTimeCallback(48000);
+    const time = new RtpTimeCallback(90000);
+    const depacketizer = new DepacketizeCallback("MPEG4/ISO/AVC", {
+      isFinalPacketInSequence: (h) => h.marker,
+    });
 
-      this.audio.pipe(time.input);
-      time.pipe(depacketizer.input);
-      depacketizer.pipe(mp4.inputAudio);
-    }
-    {
-      const time = new RtpTimeCallback(90000);
-      const depacketizer = new DepacketizeCallback("MPEG4/ISO/AVC", {
-        isFinalPacketInSequence: (h) => h.marker,
-      });
+    this.video.pipe(time.input);
+    time.pipe(depacketizer.input);
+    depacketizer.pipe(m4v.inputVideo);
 
-      this.video.pipe(time.input);
-      time.pipe(depacketizer.input);
-      depacketizer.pipe(mp4.inputVideo);
-    }
-
-    mp4.pipe(async (o) => {
-      console.log(o.kind, o.duration);
-
+    m4v.pipe(async (o) => {
       if (o.type === "init") {
         this.onOutput.execute({
           operation: "write",
           init: Buffer.from(o.data),
         });
-      } else if (o.type === "key" && o.kind === "video") {
+      } else if (o.type === "key") {
         const previousDuration =
           this.previousDuration > 0 ? this.previousDuration : undefined;
 
@@ -85,7 +117,6 @@ export class Mp4Transcoder implements ContainerTranscoder {
         this.previousDuration = 0;
       } else {
         this.previousDuration += o.duration;
-
         this.onOutput.execute({
           operation: "append",
           chunk: Buffer.from(o.data),
@@ -94,19 +125,11 @@ export class Mp4Transcoder implements ContainerTranscoder {
     });
   }
 
-  inputAudioRtcp(packet: RtcpPacket): void {
-    this.audioRtcp.input(packet);
-  }
-
-  inputAudioRtp(packet: RtpPacket): void {
-    this.audio.input(packet);
-  }
-
-  inputVideoRtcp(packet: RtcpPacket): void {
+  inputRtcp(packet: RtcpPacket): void {
     this.videoRtcp.input(packet);
   }
 
-  inputVideoRtp(packet: RtpPacket): void {
+  inputRtp(packet: RtpPacket): void {
     this.video.input(packet);
   }
 }

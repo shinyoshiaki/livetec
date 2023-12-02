@@ -1,10 +1,15 @@
 import { create } from "xmlbuilder2";
 import { XMLBuilder } from "xmlbuilder2/lib/interfaces";
 
+export interface AdaptionConfig {
+  mimeType: string;
+  represententions?: { width: number; height: number }[];
+}
+
 export class MPD {
   private root: XMLBuilder;
-  initialization: string = "init.webm";
-  media: string = "media$Number$.webm";
+  container: "mp4" = "mp4";
+  ext: string = "m4s";
   availabilityStartTime = new Date().toISOString();
   publishTime = new Date().toISOString();
   segmentationTimeLine: {
@@ -16,16 +21,48 @@ export class MPD {
      */
     t?: number;
   }[] = [];
-  codecs = ["vp8", "opus"];
+  /**mimetypes */
+  adaptions: AdaptionConfig[] = [
+    { mimeType: "video/vp8", represententions: [{ width: 1280, height: 720 }] },
+    { mimeType: "audio/opus" },
+  ];
   minimumUpdatePeriod = 1;
   minBufferTime = 2;
   width = 1920;
   height = 1080;
 
+  get initialization() {
+    return `init.${this.ext}`;
+  }
+
+  get media() {
+    return `$RepresentationID$_$Number$.${this.ext}`;
+  }
+
   constructor(props: Partial<MPD> = {}) {
     Object.assign(this, props);
 
     this.root = this.create();
+  }
+
+  getInit(index: number) {
+    const adaption = this.adaptions[index];
+    return `${mimeType2ContentType(adaption.mimeType)}/${this.initialization}`;
+  }
+
+  getMedia({
+    adaption: index,
+    current,
+    representatoin,
+  }: {
+    adaption: number;
+    current: number;
+    representatoin?: number;
+  }) {
+    const adaption = this.adaptions[index];
+    return `${mimeType2ContentType(adaption.mimeType)}/${this.media
+      .replace("$RepresentationID$", representatoin?.toString() ?? "0")
+      .replace("$Number$", current.toString())}`;
   }
 
   private create() {
@@ -44,24 +81,27 @@ export class MPD {
           minBufferTime: `PT${this.minBufferTime}S`,
         }),
         Period: {
-          ...toAttributes({ start: "PT0S", id: "1" }),
-          AdaptationSet: {
-            ...toAttributes({ mimeType: "video/webm" }),
-            ContentComponent: {
-              ...toAttributes({ contentType: "video", id: 1 }),
-            },
+          ...toAttributes({ start: "PT0S", id: "0" }),
+          AdaptationSet: this.adaptions.map((codec, i) => ({
+            ...toAttributes({
+              mimeType: `${mimeType2ContentType(codec.mimeType)}/${
+                this.container
+              }`,
+            }),
             Representation: {
               ...toAttributes({
-                id: "1",
-                width: this.width,
-                height: this.height,
-                codecs: this.codecs.join(","),
+                id: "0",
+                width: (codec.represententions?.[0] ?? {}).width,
+                height: (codec.represententions?.[0] ?? {}).height,
+                codecs: mimeType2Codec(codec.mimeType),
               }),
               SegmentTemplate: {
                 ...toAttributes({
                   timescale: 1000,
-                  initialization: this.initialization,
-                  media: this.media,
+                  initialization: this.getInit(i),
+                  media: `${mimeType2ContentType(codec.mimeType)}/${
+                    this.media
+                  }`,
                   presentationTimeOffset: 0,
                 }),
                 SegmentTimeline: {
@@ -71,7 +111,7 @@ export class MPD {
                 },
               },
             },
-          },
+          })),
         },
         UTCTiming: {
           ...toAttributes({
@@ -94,3 +134,11 @@ const toAttributes = (o: object) =>
     acc["@" + k] = v;
     return acc;
   }, {});
+
+const mimeType2Codec = (mimeType: string) => {
+  return mimeType.split("/")[1];
+};
+
+const mimeType2ContentType = (mimeType: string) => {
+  return mimeType.split("/")[0];
+};

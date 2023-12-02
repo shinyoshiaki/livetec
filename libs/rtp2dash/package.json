@@ -5,7 +5,10 @@
   "main": "index.js",
   "devDependencies": {},
   "scripts": {
-    "build": "tsc -p tsconfig.production.json"
+    "build": "tsc -p tsconfig.production.json",
+    "type": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run ./tests",
+    "test:dev": "vitest run ./tests"
   },
   "repository": {
     "type": "git",

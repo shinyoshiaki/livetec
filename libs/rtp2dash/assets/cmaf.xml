@@ -1,0 +1,33 @@
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="static"
+    mediaPresentationDuration="PT0H4M40S" minBufferTime="PT1.5S">
+
+    <Period>
+        <AdaptationSet mimeType="video/mp4" codecs="avc1.42E01E"
+            width="640" height="360" frameRate="24"
+            lang="en">
+            <Representation id="video1" bandwidth="500000">
+                <BaseURL>video/500kbps.m4s</BaseURL>
+                <SegmentTemplate duration="4"
+                    media="video/500kbps_$Number$.m4s"
+                    startNumber="1" />
+            </Representation>
+            <Representation id="video2" bandwidth="1000000">
+                <BaseURL>video/1mbps.m4s</BaseURL>
+                <SegmentTemplate duration="4"
+                    media="video/1mbps_$Number$.m4s"
+                    startNumber="1" />
+            </Representation>
+            <!-- 他のビデオレプレゼンテーションがある場合はここに追加 -->
+        </AdaptationSet>
+
+        <AdaptationSet mimeType="audio/mp4" codecs="opus" lang="en">
+            <Representation id="audio1" bandwidth="128000">
+                <BaseURL>audio/128kbps.m4s</BaseURL>
+                <SegmentTemplate duration="4"
+                    media="audio/128kbps_$Number$.m4s"
+                    startNumber="1" />
+            </Representation>
+            <!-- 他のオーディオレプレゼンテーションがある場合はここに追加 -->
+        </AdaptationSet>
+    </Period>
+</MPD>

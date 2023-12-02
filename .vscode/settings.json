@@ -9,5 +9,6 @@
     "ufrag",
     "weblive",
     "werift"
-  ]
+  ],
+  "vitest.enable": true
 }

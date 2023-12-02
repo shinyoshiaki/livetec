@@ -1,13 +1,18 @@
 import Event from "rx.mini";
 import { RtcpPacket, RtpPacket } from "werift-rtp";
 
-export interface ContainerTranscoder {
+export interface AudioTranscoder {
   onOutput: Event<[ContainerOutput]>;
   start(): void;
-  inputAudioRtp(packet: RtpPacket): void;
-  inputAudioRtcp(packet: RtcpPacket): void;
-  inputVideoRtp(packet: RtpPacket): void;
-  inputVideoRtcp(packet: RtcpPacket): void;
+  inputRtp(packet: RtpPacket): void;
+  inputRtcp(packet: RtcpPacket): void;
+}
+
+export interface VideoTranscoder {
+  onOutput: Event<[ContainerOutput]>;
+  start(): void;
+  inputRtp(packet: RtpPacket): void;
+  inputRtcp(packet: RtcpPacket): void;
 }
 
 export interface ContainerOutput {

@@ -1,10 +1,10 @@
 import Event from "rx.mini";
-import { MPD } from "./mpd";
+import { AdaptionConfig, MPD } from "./mpd";
 import { ContainerOutput } from "./container/base";
 
 export interface DashTranscoderProps {
-  dashCodecs?: string[];
-  container: "webm" | "mp4";
+  codecs?: AdaptionConfig[];
+  container: "mp4";
 }
 
 export class DashTranscoder {
@@ -16,19 +16,25 @@ export class DashTranscoder {
   >();
 
   constructor(private props: DashTranscoderProps) {
-    const codecs = props.dashCodecs ?? ["vp8", "opus"];
+    const codecs = props.codecs;
 
     this.mpd = new MPD({
-      codecs,
+      adaptions: codecs,
       minBufferTime: 5,
       minimumUpdatePeriod: 1,
     });
   }
 
-  input({ init, chunk, operation, previousDuration }: ContainerOutput) {
+  input({
+    init,
+    chunk,
+    operation,
+    previousDuration,
+    index,
+  }: ContainerOutput & { index: number }) {
     if (init) {
       this.onOutput.execute({
-        filename: "init." + this.props.container,
+        filename: this.mpd.getInit(index),
         data: init,
         operation: "write",
       });
@@ -37,7 +43,6 @@ export class DashTranscoder {
     if (chunk) {
       if (operation === "write") {
         if (previousDuration! > 0) {
-          // MPDにクラスターの長さを書き込む
           this.mpd.segmentationTimeLine.push({
             d: previousDuration!,
             t: this.timestamp,
@@ -53,7 +58,10 @@ export class DashTranscoder {
 
         this.number++;
         this.onOutput.execute({
-          filename: `media${this.number}.${this.props.container}`,
+          filename: this.mpd.getMedia({
+            adaption: index,
+            current: this.number,
+          }),
           data: chunk,
           operation: "write",
         });
@@ -62,7 +70,10 @@ export class DashTranscoder {
           return;
         }
         this.onOutput.execute({
-          filename: `media${this.number}.${this.props.container}`,
+          filename: this.mpd.getMedia({
+            adaption: index,
+            current: this.number,
+          }),
           data: chunk,
           operation: "append",
         });
