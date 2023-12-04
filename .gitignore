@@ -11,6 +11,7 @@ dist
 *.mpd
 *.mp3
 *.mp4
+*.m4s
 *.pcm
 vosk-model*
 *.7z*

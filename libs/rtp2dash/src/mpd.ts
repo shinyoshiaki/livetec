@@ -10,6 +10,7 @@ export class MPD {
   private root: XMLBuilder;
   container: "mp4" = "mp4";
   ext: string = "m4s";
+  basePath = "";
   availabilityStartTime = new Date().toISOString();
   publishTime = new Date().toISOString();
   segmentationTimeLine: {
@@ -31,18 +32,18 @@ export class MPD {
   width = 1920;
   height = 1080;
 
-  get initialization() {
+  constructor(props: Partial<MPD> = {}) {
+    Object.assign(this, props);
+
+    this.root = this.create();
+  }
+
+  private get initialization() {
     return `init.${this.ext}`;
   }
 
   get media() {
     return `$RepresentationID$_$Number$.${this.ext}`;
-  }
-
-  constructor(props: Partial<MPD> = {}) {
-    Object.assign(this, props);
-
-    this.root = this.create();
   }
 
   getInit(index: number) {
@@ -66,6 +67,8 @@ export class MPD {
   }
 
   private create() {
+    let representatoinId = 0;
+
     return create({
       MPD: {
         ...toAttributes({
@@ -90,7 +93,7 @@ export class MPD {
             }),
             Representation: {
               ...toAttributes({
-                id: "0",
+                id: representatoinId++,
                 width: (codec.represententions?.[0] ?? {}).width,
                 height: (codec.represententions?.[0] ?? {}).height,
                 codecs: mimeType2Codec(codec.mimeType),
@@ -98,7 +101,7 @@ export class MPD {
               SegmentTemplate: {
                 ...toAttributes({
                   timescale: 1000,
-                  initialization: this.getInit(i),
+                  initialization: `${this.getInit(i)}`,
                   media: `${mimeType2ContentType(codec.mimeType)}/${
                     this.media
                   }`,

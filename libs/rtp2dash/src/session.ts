@@ -7,6 +7,7 @@ import { AdaptionConfig } from "./mpd";
 export type Rtp2DashProps = {
   codecs?: AdaptionConfig[];
   container: Mp4TranscoderProps & { format: "mp4" };
+  basePath: string;
 };
 
 export class Rtp2Dash {
@@ -32,6 +33,7 @@ export class Rtp2Dash {
     this.dash = new DashTranscoder({
       ...this.props,
       container: this.props.container.format,
+      basePath: this.props.basePath,
     });
     const videoIndex = this.dash.mpd.adaptions.findIndex((c) =>
       c.mimeType.includes("video")

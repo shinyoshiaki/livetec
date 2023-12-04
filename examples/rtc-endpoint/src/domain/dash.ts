@@ -16,12 +16,14 @@ export class DashSource {
         { mimeType: "audio/opus" },
       ],
       container: { format: "mp4", audio: "opus", video: "avc1" },
+      basePath: "dash",
     });
 
     try {
       rmSync("./dash", { recursive: true });
     } catch (error) {}
-    mkdirSync("./dash", { recursive: true });
+    mkdirSync("./dash/audio", { recursive: true });
+    mkdirSync("./dash/video", { recursive: true });
 
     this.dash.onOutput.subscribe(async (o) => {
       const filename = "./dash/" + o.filename;

@@ -5,6 +5,7 @@ import { ContainerOutput } from "./container/base";
 export interface DashTranscoderProps {
   codecs?: AdaptionConfig[];
   container: "mp4";
+  basePath: string;
 }
 
 export class DashTranscoder {
@@ -22,6 +23,7 @@ export class DashTranscoder {
       adaptions: codecs,
       minBufferTime: 5,
       minimumUpdatePeriod: 1,
+      basePath: props.basePath,
     });
   }
 
@@ -44,7 +46,7 @@ export class DashTranscoder {
       if (operation === "write") {
         if (previousDuration! > 0) {
           this.mpd.segmentationTimeLine.push({
-            d: previousDuration!,
+            d: previousDuration! / 1000,
             t: this.timestamp,
           });
           this.onOutput.execute({
@@ -53,7 +55,7 @@ export class DashTranscoder {
             operation: "write",
           });
 
-          this.timestamp += previousDuration!;
+          this.timestamp += previousDuration! / 1000;
         }
 
         this.number++;

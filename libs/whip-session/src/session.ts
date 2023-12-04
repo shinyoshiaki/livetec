@@ -37,11 +37,11 @@ export class WhipMediaSession {
         this.onTrack.execute(track);
 
         track.onReceiveRtp.once((rtp) => {
-          if (track.kind === "video") {
-            setInterval(() => {
-              transceiver.receiver.sendRtcpPLI(rtp.header.ssrc);
-            }, 1000);
-          }
+          // if (track.kind === "video") {
+          //   setInterval(() => {
+          //     transceiver.receiver.sendRtcpPLI(rtp.header.ssrc);
+          //   }, 1000);
+          // }
         });
       });
     });

@@ -51,18 +51,17 @@ function convertPath(openApiPath: string): string {
   return openApiPath.replace(/{(.*?)}/g, ":$1");
 }
 
-const dir = "./dash";
-
 export function registerStaticRoutes(
   server: Server<typeof IncomingMessage, typeof ServerResponse>
 ) {
   server.on("request", async (req, res) => {
-    const filePath = dir + req.url;
+    const filePath = req.url!;
 
     const extname = String(path.extname(filePath)).toLowerCase();
     const mimeTypes: any = {
       ".mpd": "application/dash+xml",
       ".webm": "video/webm",
+      ".m4s": "video/m4s",
     };
 
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -70,8 +69,14 @@ export function registerStaticRoutes(
     res.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET");
     res.setHeader("Access-Control-Allow-Headers", "*");
 
+    console.log("request", filePath, mimeTypes[extname]);
+
     try {
-      const file = await readFile(filePath);
+      const file = await readFile("." + filePath);
+
+      if (extname === ".m4s") {
+        console.log("file", file.length);
+      }
       res.writeHead(200, { "Content-Type": mimeTypes[extname] });
       res.end(file);
     } catch (error) {
